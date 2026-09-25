@@ -58,6 +58,7 @@ enum AdvancedSettingsScreenViewAction {
 protocol AdvancedSettingsProtocol: AnyObject {
     var viewSourceEnabled: Bool { get set }
     var appAppearance: AppAppearance { get set }
+    var brandTheme: BrandTheme { get set }
     var sharePresence: Bool { get set }
     var optimizeMediaUploads: Bool { get set }
     var liveLocationMinimumDistanceUpdate: Int { get set }

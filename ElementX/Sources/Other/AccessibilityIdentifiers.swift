@@ -37,6 +37,7 @@ enum A11yIdentifiers {
     static let softLogoutScreen = SoftLogoutScreen()
     static let startChatScreen = StartChatScreen()
     static let roomMemberDetailsScreen = RoomMemberDetailsScreen()
+    static let userProfileScreen = UserProfileScreen()
     static let createRoomScreen = CreateRoomScreen()
     static let inviteUsersScreen = InviteUsersScreen()
     static let notificationSettingsScreen = NotificationSettingsScreen()
@@ -206,6 +207,11 @@ enum A11yIdentifiers {
         let ignore = "room_member_details-ignore"
         let unignore = "room_member_details-unignore"
         let directChat = "room_member_details-direct_chat"
+    }
+    
+    struct UserProfileScreen {
+        let editProfile = "user_profile-edit_profile"
+        let settings = "user_profile-settings"
     }
     
     struct RoomNotificationSettingsScreen {

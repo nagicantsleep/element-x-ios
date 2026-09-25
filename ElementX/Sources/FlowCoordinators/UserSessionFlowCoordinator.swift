@@ -20,7 +20,7 @@ enum UserSessionFlowCoordinatorAction {
 }
 
 class UserSessionFlowCoordinator: FlowCoordinatorProtocol {
-    enum HomeTab: Hashable { case chats, spaces, search }
+    enum HomeTab: Hashable { case chats, contacts, spaces, profile, search }
     
     private let navigationRootCoordinator: NavigationRootCoordinator
     private let navigationTabCoordinator: NavigationTabCoordinator<HomeTab>
@@ -37,6 +37,15 @@ class UserSessionFlowCoordinator: FlowCoordinatorProtocol {
     private let chatsTabDetails: NavigationTabCoordinator<HomeTab>.TabDetails
     private let spacesTabFlowCoordinator: SpacesTabFlowCoordinator
     private let spacesTabDetails: NavigationTabCoordinator<HomeTab>.TabDetails
+    
+    // Z/L layout: two additional tabs reusing existing screens.
+    private let contactsTabDetails: NavigationTabCoordinator<HomeTab>.TabDetails
+    private let profileTabDetails: NavigationTabCoordinator<HomeTab>.TabDetails
+    
+    // Z/L layout: retained so the Profile tab can push "Edit profile" onto its own stack.
+    private let profileStackCoordinator: NavigationStackCoordinator
+    // periphery:ignore - retaining purpose
+    private var userProfileScreenCoordinator: UserProfileScreenCoordinator?
     
     private let searchScreenCoordinator: SearchScreenCoordinator?
     private let searchTabNavigationStackCoordinator: NavigationStackCoordinator?
@@ -96,6 +105,27 @@ class UserSessionFlowCoordinator: FlowCoordinatorProtocol {
         spacesTabDetails = .init(tag: HomeTab.spaces, title: L10n.screenHomeTabSpaces, icon: \.space, selectedIcon: \.spaceSolid)
         spacesTabDetails.navigationSplitCoordinator = spacesSplitCoordinator
         
+        // Z/L layout: Contacts tab reuses the start chat screen; Profile tab reuses the user profile screen.
+        let contactsStackCoordinator = NavigationStackCoordinator()
+        contactsStackCoordinator.setRootCoordinator(StartChatScreenCoordinator(parameters: .init(userSession: flowParameters.userSession,
+                                                                                                 userDiscoveryService: UserDiscoveryService(clientProxy: flowParameters.userSession.clientProxy),
+                                                                                                 userIndicatorController: flowParameters.userIndicatorController,
+                                                                                                 appSettings: flowParameters.appSettings,
+                                                                                                 analytics: flowParameters.analytics)))
+        contactsTabDetails = .init(tag: HomeTab.contacts, title: L10n.screenHomeTabContacts, icon: \.user, selectedIcon: \.userSolid)
+        
+        let profileStackCoordinator = NavigationStackCoordinator()
+        let userProfileScreenCoordinator = UserProfileScreenCoordinator(parameters: .init(userID: flowParameters.userSession.clientProxy.userID,
+                                                                                          isPresentedModally: false,
+                                                                                          userSession: flowParameters.userSession,
+                                                                                          userIndicatorController: flowParameters.userIndicatorController,
+                                                                                          analytics: flowParameters.analytics,
+                                                                                          appSettings: flowParameters.appSettings))
+        profileStackCoordinator.setRootCoordinator(userProfileScreenCoordinator)
+        self.profileStackCoordinator = profileStackCoordinator
+        self.userProfileScreenCoordinator = userProfileScreenCoordinator
+        profileTabDetails = .init(tag: HomeTab.profile, title: L10n.screenHomeTabProfile, icon: \.userProfile, selectedIcon: \.userProfileSolid)
+        
         if flowParameters.appSettings.globalSearchEnabled, #available(iOS 26.0, *) {
             let searchCoordinator = SearchScreenCoordinator(parameters: .init(roomSummaryProvider: flowParameters.userSession.clientProxy.alternateRoomSummaryProvider,
                                                                               clientProxy: flowParameters.userSession.clientProxy,
@@ -120,7 +150,9 @@ class UserSessionFlowCoordinator: FlowCoordinatorProtocol {
         
         var tabs: [NavigationTabCoordinator<HomeTab>.Tab] = [
             .init(coordinator: chatsSplitCoordinator, details: chatsTabDetails),
-            .init(coordinator: spacesSplitCoordinator, details: spacesTabDetails)
+            .init(coordinator: contactsStackCoordinator, details: contactsTabDetails),
+            .init(coordinator: spacesSplitCoordinator, details: spacesTabDetails),
+            .init(coordinator: profileStackCoordinator, details: profileTabDetails)
         ]
         if let searchTabNavigationStackCoordinator, let searchTabDetails {
             tabs.append(.init(coordinator: searchTabNavigationStackCoordinator, details: searchTabDetails))
@@ -225,6 +257,21 @@ class UserSessionFlowCoordinator: FlowCoordinatorProtocol {
     
     // swiftlint:disable:next function_body_length
     private func setupObservers() {
+        userProfileScreenCoordinator?.actionsPublisher
+            .sink { [weak self] action in
+                guard let self else { return }
+                switch action {
+                case .editProfile:
+                    presentUserDetailsEditScreen()
+                case .showSettings:
+                    handleAppRoute(.settings, animated: true)
+                case .openDirectChat, .startCall, .dismiss:
+                    // Not supported from the Profile tab (own user, not presented modally).
+                    break
+                }
+            }
+            .store(in: &cancellables)
+        
         chatsTabFlowCoordinator.actionsPublisher
             .sink { [weak self] action in
                 guard let self else { return }
@@ -397,6 +444,29 @@ class UserSessionFlowCoordinator: FlowCoordinatorProtocol {
                 self?.stateMachine.tryEvent(.dismissedSettingsScreen)
             }
         }
+    }
+    
+    // MARK: - Profile Tab
+    
+    /// Z/L layout: pushes the "Edit profile" screen onto the Profile tab's own navigation stack.
+    /// Mirrors `SettingsFlowCoordinator.presentUserDetailsEditScreen()`.
+    private func presentUserDetailsEditScreen() {
+        let coordinator = UserDetailsEditScreenCoordinator(parameters: .init(orientationManager: flowParameters.windowManager,
+                                                                             userSession: flowParameters.userSession,
+                                                                             mediaUploadingPreprocessor: MediaUploadingPreprocessor(appSettings: flowParameters.appSettings),
+                                                                             navigationStackCoordinator: profileStackCoordinator,
+                                                                             userIndicatorController: flowParameters.userIndicatorController,
+                                                                             appSettings: flowParameters.appSettings))
+        coordinator.actions
+            .sink { [weak self] action in
+                switch action {
+                case .dismiss:
+                    self?.profileStackCoordinator.pop()
+                }
+            }
+            .store(in: &cancellables)
+        
+        profileStackCoordinator.push(coordinator)
     }
     
     // MARK: - Session Verification

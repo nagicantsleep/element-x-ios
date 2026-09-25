@@ -73,9 +73,6 @@ class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDeleg
         let appHooks = AppHooks()
         appHooks.setUp()
         
-        // Override colours before we start building any UI components.
-        appHooks.compoundHook.override(colors: Color.compound, uiColors: UIColor.compound)
-        
         windowManager = WindowManager(appDelegate: appDelegate)
         let networkMonitor = NetworkMonitor()
         appMediator = AppMediator(windowManager: windowManager, networkMonitor: networkMonitor)
@@ -85,6 +82,10 @@ class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDeleg
         }
         let appSettings = appHooks.appSettingsHook.configure(AppSettings(store: userDefaults))
         self.appSettings = appSettings
+        
+        // Apply the persisted brand theme, overriding colours before we start building any UI components.
+        appHooks.registerCompoundHook(BrandCompoundHook(appSettings: appSettings))
+        appHooks.compoundHook.override(colors: Color.compound, uiColors: UIColor.compound)
         
         targetConfiguration = Target.mainApp.configure(logLevel: appSettings.logLevel,
                                                        traceLogPacks: appSettings.traceLogPacks,
@@ -228,6 +229,12 @@ class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDeleg
                     // Unfortunately .preferredColorScheme doesn't propagate properly throughout the app when changed
                     window.overrideUserInterfaceStyle = appAppearance.interfaceStyle
                 }
+            }
+            .onReceive(appSettings.brandThemePublisher) { [weak self] _ in
+                guard let self else { return }
+                
+                // Re-apply the Compound colour token overrides when the brand theme changes.
+                appHooks.compoundHook.override(colors: Color.compound, uiColors: UIColor.compound)
             })
     }
     

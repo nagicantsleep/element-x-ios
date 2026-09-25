@@ -21,8 +21,6 @@ struct SettingsScreen: View {
     
     var body: some View {
         Form {
-            userSection
-            
             if !shouldHideManageAccountSection {
                 manageAccountSection
             }
@@ -42,40 +40,6 @@ struct SettingsScreen: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbarVisibility(context.viewState.navigationBarVisibility, for: .navigationBar)
         .toolbar { toolbar }
-    }
-    
-    private var userSection: some View {
-        Section {
-            ListRow(kind: .custom {
-                Button {
-                    context.send(viewAction: .userDetails)
-                } label: {
-                    HStack(spacing: 12) {
-                        LoadableAvatarImage(url: context.viewState.userProfile.avatarURL,
-                                            name: context.viewState.userProfile.displayName,
-                                            contentID: context.viewState.userProfile.id,
-                                            avatarSize: .user(on: .settings),
-                                            mediaProvider: context.mediaProvider)
-                            .accessibilityHidden(true)
-                        
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(context.viewState.userProfile.displayName ?? "")
-                                .font(.compound.headingMD)
-                                .foregroundColor(.compound.textPrimary)
-                            Text(context.viewState.userProfile.id)
-                                .font(.compound.bodySM)
-                                .foregroundColor(.compound.textSecondary)
-                        }
-                        
-                        Spacer()
-                        
-                        ListRowAccessory.navigationLink
-                    }
-                    .padding(.horizontal, ListRowPadding.horizontal)
-                    .padding(.vertical, 8)
-                }
-            })
-        }
     }
     
     private var manageMyAppSection: some View {

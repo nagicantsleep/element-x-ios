@@ -89,8 +89,6 @@ class SettingsFlowCoordinator: FlowCoordinatorProtocol {
                     actionsSubject.send(.runLogoutFlow)
                 case .secureBackup:
                     startEncryptionSettingsFlow(animated: true)
-                case .userDetails:
-                    presentUserDetailsEditScreen()
                 case .linkNewDevice:
                     startLinkNewDeviceFlow()
                 case let .manageAccount(url):
@@ -157,25 +155,6 @@ class SettingsFlowCoordinator: FlowCoordinatorProtocol {
         
         encryptionSettingsFlowCoordinator = coordinator
         coordinator.start()
-    }
-    
-    private func presentUserDetailsEditScreen() {
-        let coordinator = UserDetailsEditScreenCoordinator(parameters: .init(orientationManager: flowParameters.windowManager,
-                                                                             userSession: flowParameters.userSession,
-                                                                             mediaUploadingPreprocessor: MediaUploadingPreprocessor(appSettings: flowParameters.appSettings),
-                                                                             navigationStackCoordinator: navigationStackCoordinator,
-                                                                             userIndicatorController: flowParameters.userIndicatorController,
-                                                                             appSettings: flowParameters.appSettings))
-        coordinator.actions
-            .sink { [weak self] action in
-                switch action {
-                case .dismiss:
-                    self?.navigationStackCoordinator.pop()
-                }
-            }
-            .store(in: &cancellables)
-        
-        navigationStackCoordinator.push(coordinator)
     }
     
     private func startLinkNewDeviceFlow() {

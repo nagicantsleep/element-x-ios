@@ -24,7 +24,6 @@ class SettingsScreenViewModel: SettingsScreenViewModelType, SettingsScreenViewMo
         self.appSettings = appSettings
         
         super.init(initialViewState: .init(deviceID: userSession.clientProxy.deviceID,
-                                           userProfile: userSession.clientProxy.userProfilePublisher.value,
                                            showLinkNewDeviceButton: appSettings.linkNewDeviceEnabled,
                                            showAccountDeactivation: userSession.clientProxy.canDeactivateAccount,
                                            showDeveloperOptions: appSettings.developerOptionsEnabled,
@@ -39,11 +38,6 @@ class SettingsScreenViewModel: SettingsScreenViewModelType, SettingsScreenViewMo
         
         appSettings.linkNewDeviceEnabledPublisher
             .weakAssign(to: \.state.showLinkNewDeviceButton, on: self)
-            .store(in: &cancellables)
-        
-        userSession.clientProxy.userProfilePublisher
-            .receive(on: DispatchQueue.main)
-            .weakAssign(to: \.state.userProfile, on: self)
             .store(in: &cancellables)
         
         userSession.sessionSecurityStatePublisher
@@ -90,8 +84,6 @@ class SettingsScreenViewModel: SettingsScreenViewModelType, SettingsScreenViewMo
         switch viewAction {
         case .close:
             actionsSubject.send(.close)
-        case .userDetails:
-            actionsSubject.send(.userDetails)
         case .linkNewDevice:
             actionsSubject.send(.linkNewDevice)
         case let .manageAccount(url):

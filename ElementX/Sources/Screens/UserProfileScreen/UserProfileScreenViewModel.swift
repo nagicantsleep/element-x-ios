@@ -67,6 +67,10 @@ class UserProfileScreenViewModel: UserProfileScreenViewModelType, UserProfileScr
             Task { await createDirectChat() }
         case .startCall(let roomID, let isVoiceCall):
             Task { await startCall(roomID: roomID, isVoiceCall: isVoiceCall) }
+        case .editProfile:
+            actionsSubject.send(.editProfile)
+        case .showSettings:
+            actionsSubject.send(.showSettings)
         case .dismiss:
             actionsSubject.send(.dismiss)
         }

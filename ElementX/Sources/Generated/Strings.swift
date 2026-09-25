@@ -1358,6 +1358,10 @@ internal nonisolated enum L10n {
   internal static func screenAccountProviderSignupTitle(_ p1: Any) -> String {
     return L10n.tr("Localizable", "screen_account_provider_signup_title", String(describing: p1))
   }
+  /// Override the app colours with a brand palette.
+  internal static var screenAdvancedSettingsBrandThemeDescription: String { return L10n.tr("Localizable", "screen_advanced_settings_brand_theme_description") }
+  /// Brand theme
+  internal static var screenAdvancedSettingsBrandThemeTitle: String { return L10n.tr("Localizable", "screen_advanced_settings_brand_theme_title") }
   /// Developer mode
   internal static var screenAdvancedSettingsDeveloperMode: String { return L10n.tr("Localizable", "screen_advanced_settings_developer_mode") }
   /// Enable to have access to features and functionality for developers.
@@ -1956,9 +1960,13 @@ internal nonisolated enum L10n {
   internal static var screenEncryptionResetFooter: String { return L10n.tr("Localizable", "screen_encryption_reset_footer") }
   /// Can't confirm? You’ll need to reset your digital identity.
   internal static var screenEncryptionResetTitle: String { return L10n.tr("Localizable", "screen_encryption_reset_title") }
-  /// Chats
+  /// Messages
   internal static var screenHomeTabChats: String { return L10n.tr("Localizable", "screen_home_tab_chats") }
-  /// Spaces
+  /// Contacts
+  internal static var screenHomeTabContacts: String { return L10n.tr("Localizable", "screen_home_tab_contacts") }
+  /// Profile
+  internal static var screenHomeTabProfile: String { return L10n.tr("Localizable", "screen_home_tab_profile") }
+  /// Discover
   internal static var screenHomeTabSpaces: String { return L10n.tr("Localizable", "screen_home_tab_spaces") }
   /// Can't confirm?
   internal static var screenIdentityConfirmationCannotConfirm: String { return L10n.tr("Localizable", "screen_identity_confirmation_cannot_confirm") }

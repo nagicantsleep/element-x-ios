@@ -180,6 +180,10 @@ final nonisolated class AppSettings: @unchecked Sendable {
     @UserPreference(defaultValue: AppAppearance.system)
     var appAppearance: AppAppearance
     
+    /// The brand theme (colour token overrides) applied at runtime.
+    @UserPreference(defaultValue: BrandTheme.defaultTheme)
+    var brandTheme: BrandTheme
+    
     // MARK: - Security
     
     /// The app must be locked with a PIN code as part of the authentication flow.

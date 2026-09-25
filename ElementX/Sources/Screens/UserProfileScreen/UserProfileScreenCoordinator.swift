@@ -21,6 +21,10 @@ struct UserProfileScreenCoordinatorParameters {
 enum UserProfileScreenCoordinatorAction {
     case openDirectChat(roomID: String)
     case startCall(roomProxy: JoinedRoomProxyProtocol, isVoiceCall: Bool)
+    /// Z/L layout: only emitted from the Profile tab (own user).
+    case editProfile
+    /// Z/L layout: only emitted from the Profile tab (own user).
+    case showSettings
     case dismiss
 }
 
@@ -52,6 +56,10 @@ final class UserProfileScreenCoordinator: CoordinatorProtocol {
                 actionsSubject.send(.openDirectChat(roomID: roomID))
             case .startCall(let roomProxy, let isVoiceCall):
                 actionsSubject.send(.startCall(roomProxy: roomProxy, isVoiceCall: isVoiceCall))
+            case .editProfile:
+                actionsSubject.send(.editProfile)
+            case .showSettings:
+                actionsSubject.send(.showSettings)
             case .dismiss:
                 actionsSubject.send(.dismiss)
             }

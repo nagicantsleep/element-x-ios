@@ -303,6 +303,8 @@ final class RoomMembersFlowCoordinator: FlowCoordinatorProtocol {
                 stateMachine.tryEvent(.startRoomFlow(roomID: roomID, via: [], eventID: nil))
             case .startCall(let roomProxy, let isVoiceCall):
                 actionsSubject.send(.presentCallScreen(roomProxy: roomProxy, isVoiceCall: isVoiceCall))
+            case .editProfile, .showSettings:
+                break // Only available on the Profile tab.
             case .dismiss:
                 break // Not supported when pushed.
             }

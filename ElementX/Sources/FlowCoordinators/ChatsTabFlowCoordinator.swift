@@ -766,6 +766,8 @@ class ChatsTabFlowCoordinator: FlowCoordinatorProtocol {
                 stateMachine.processEvent(.selectRoom(roomID: roomID, via: [], entryPoint: .room))
             case .startCall(let roomProxy, let isVoiceCall):
                 actionsSubject.send(.showCallScreen(roomProxy: roomProxy, isVoiceCall: isVoiceCall))
+            case .editProfile, .showSettings:
+                break // Only available on the Profile tab.
             case .dismiss:
                 navigationSplitCoordinator.setSheetCoordinator(nil)
             }

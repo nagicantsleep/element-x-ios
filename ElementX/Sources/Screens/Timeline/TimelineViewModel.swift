@@ -104,6 +104,7 @@ class TimelineViewModel: TimelineViewModelType, TimelineViewModelProtocol {
                                                        linkPreviewsEnabled: appSettings.linkPreviewsEnabled,
                                                        jumpToReadMarkerEnabled: appSettings.jumpToReadMarkerEnabled,
                                                        hasPredecessor: roomProxy.predecessorRoom != nil,
+                                                       brandTheme: appSettings.brandTheme,
                                                        pinnedEventIDs: roomProxy.infoPublisher.value.pinnedEventIDs,
                                                        emojiProvider: emojiProvider,
                                                        linkMetadataProvider: hideTimelineMedia ? nil : linkMetadataProvider,
@@ -573,6 +574,10 @@ class TimelineViewModel: TimelineViewModelType, TimelineViewModelProtocol {
         
         appSettings.jumpToReadMarkerEnabledPublisher
             .weakAssign(to: \.state.jumpToReadMarkerEnabled, on: self)
+            .store(in: &cancellables)
+        
+        appSettings.brandThemePublisher
+            .weakAssign(to: \.state.brandTheme, on: self)
             .store(in: &cancellables)
         
         userSession.clientProxy.timelineMediaVisibilityPublisher

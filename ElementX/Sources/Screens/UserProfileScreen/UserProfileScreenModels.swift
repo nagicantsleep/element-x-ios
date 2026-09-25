@@ -11,6 +11,8 @@ import Foundation
 enum UserProfileScreenViewModelAction {
     case openDirectChat(roomID: String)
     case startCall(roomProxy: JoinedRoomProxyProtocol, isVoiceCall: Bool)
+    case editProfile
+    case showSettings
     case dismiss
 }
 
@@ -45,6 +47,10 @@ enum UserProfileScreenViewAction {
     case openDirectChat
     case createDirectChat
     case startCall(roomID: String, isVoiceCall: Bool)
+    /// Z/L layout: only shown for the signed-in user (the Profile tab).
+    case editProfile
+    /// Z/L layout: only shown for the signed-in user (the Profile tab).
+    case showSettings
     case dismiss
 }
 

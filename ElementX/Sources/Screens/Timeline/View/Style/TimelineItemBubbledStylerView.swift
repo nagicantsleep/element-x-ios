@@ -201,7 +201,7 @@ struct TimelineItemBubbledStylerView<Content: View>: View {
                                   context: context)
             .bubbleBackground(isOutgoing: timelineItem.isOutgoing,
                               insets: timelineItem.bubbleInsets(hasContentScanningFailure: hasContentScanningFailure),
-                              color: hasContentScanningFailure ? .compound.bgCriticalSubtle : timelineItem.bubbleBackgroundColor,
+                              color: hasContentScanningFailure ? .compound.bgCriticalSubtle : timelineItem.bubbleBackgroundColor(brandTheme: context.viewState.brandTheme),
                               borderColor: hasContentScanningFailure ? .compound.borderCriticalSubtle : nil)
     }
     
@@ -252,8 +252,13 @@ struct TimelineItemBubbledStylerView<Content: View>: View {
 }
 
 private extension EventBasedTimelineItemProtocol {
-    var bubbleBackgroundColor: Color? {
-        let defaultColor: Color = isOutgoing ? .compound._bgBubbleOutgoing : .compound._bgBubbleIncoming
+    func bubbleBackgroundColor(brandTheme: BrandTheme) -> Color? {
+        // `_bgBubbleOutgoing` is a stored property on `CompoundColors`, not a `CompoundColorTokens`
+        // member, so it isn't reachable by the brand theme's runtime override hook. Read the brand
+        // tint from the view state instead, falling back to Compound's default.
+        let defaultColor: Color = isOutgoing
+            ? (brandTheme.outgoingBubbleColor ?? .compound._bgBubbleOutgoing)
+            : .compound._bgBubbleIncoming
         
         switch self {
         case is ImageRoomTimelineItem, is VideoRoomTimelineItem:

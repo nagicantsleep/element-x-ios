@@ -143,8 +143,11 @@ struct HomeScreenViewState: BindableState {
             visibleRooms.isEmpty
     }
     
+    // Z/L layout: the row of filter chips (Unreads / People / Rooms / Favorites / Invites) is hidden
+    // to keep the Messages tab uncluttered, matching the reference apps. Kept as a property so it is
+    // a one-line revert.
     var shouldShowFilters: Bool {
-        !bindings.isSearchFieldFocused && roomListMode == .rooms
+        false
     }
     
     var shouldShowBanner: Bool {

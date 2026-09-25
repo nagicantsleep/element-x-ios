@@ -15,6 +15,12 @@ struct UserProfileScreen: View {
     var body: some View {
         Form {
             headerSection
+            
+            // Z/L layout: the Profile tab is the single place that shows the signed-in
+            // identity, and hosts the entry points to "Edit profile" and Settings.
+            if context.viewState.isOwnUser {
+                accountActionsSection
+            }
         }
         .compoundList()
         .navigationTitle(L10n.screenRoomMemberDetailsTitle)
@@ -32,6 +38,24 @@ struct UserProfileScreen: View {
     }
     
     // MARK: - Private
+    
+    private var accountActionsSection: some View {
+        Section {
+            ListRow(label: .default(title: L10n.screenEditProfileTitle,
+                                    icon: \.edit),
+                    kind: .navigationLink {
+                        context.send(viewAction: .editProfile)
+                    })
+                    .accessibilityIdentifier(A11yIdentifiers.userProfileScreen.editProfile)
+            
+            ListRow(label: .default(title: L10n.commonSettings,
+                                    icon: \.settings),
+                    kind: .navigationLink {
+                        context.send(viewAction: .showSettings)
+                    })
+                    .accessibilityIdentifier(A11yIdentifiers.userProfileScreen.settings)
+        }
+    }
     
     @ViewBuilder
     private var headerSection: some View {

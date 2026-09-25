@@ -582,6 +582,8 @@
 "screen_account_provider_signin_title" = "You’re about to sign in to %@";
 "screen_account_provider_signup_subtitle" = "This is where your conversations will live — just like you would use an email provider to keep your emails.";
 "screen_account_provider_signup_title" = "You’re about to create an account on %@";
+"screen_advanced_settings_brand_theme_description" = "Override the app colours with a brand palette.";
+"screen_advanced_settings_brand_theme_title" = "Brand theme";
 "screen_advanced_settings_developer_mode" = "Developer mode";
 "screen_advanced_settings_developer_mode_description" = "Enable to have access to features and functionality for developers.";
 "screen_advanced_settings_element_call_base_url" = "Custom Element Call base URL";
@@ -840,8 +842,10 @@
 "screen_encryption_reset_bullet_3" = "You will need to verify all your existing devices and contacts again";
 "screen_encryption_reset_footer" = "Only reset your digital identity if you don't have access to another verified device and you don't have your recovery key.";
 "screen_encryption_reset_title" = "Can't confirm? You’ll need to reset your digital identity.";
-"screen_home_tab_chats" = "Chats";
-"screen_home_tab_spaces" = "Spaces";
+"screen_home_tab_chats" = "Messages";
+"screen_home_tab_spaces" = "Discover";
+"screen_home_tab_contacts" = "Contacts";
+"screen_home_tab_profile" = "Profile";
 "screen_identity_confirmation_cannot_confirm" = "Can't confirm?";
 "screen_identity_confirmation_create_new_recovery_key" = "Create a new recovery key";
 "screen_identity_confirmation_subtitle" = "Choose how to verify to set up secure messaging.";

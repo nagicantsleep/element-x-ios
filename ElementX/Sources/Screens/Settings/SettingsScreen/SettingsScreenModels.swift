@@ -10,7 +10,6 @@ import SwiftUI
 
 enum SettingsScreenViewModelAction: Equatable {
     case close
-    case userDetails
     case linkNewDevice
     case manageAccount(url: URL)
     case analytics
@@ -34,7 +33,6 @@ enum SettingsScreenSecuritySectionMode {
 
 struct SettingsScreenViewState: BindableState {
     var deviceID: String?
-    var userProfile: UserProfile
     var showLinkNewDeviceButton: Bool
     var accountProfileURL: URL?
     var showAccountDeactivation: Bool
@@ -59,7 +57,6 @@ struct SettingsScreenViewStateBindings {
 
 enum SettingsScreenViewAction {
     case close
-    case userDetails
     case analytics
     case appLock
     case reportBug

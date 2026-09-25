@@ -126,6 +126,11 @@ struct TimelineViewState: BindableState {
     
     let hasPredecessor: Bool
     
+    /// The selected brand theme, used to tint the outgoing message bubble.
+    /// Compound's bubble tokens are stored properties on `CompoundColors` rather than
+    /// `CompoundColorTokens` members, so they bypass the runtime override hook.
+    var brandTheme: BrandTheme = .defaultTheme
+    
     /// The `pinnedEventIDs` are used only to determine if an item is already pinned or not.
     /// It's updated from the room info, so it's faster than using the timeline
     var pinnedEventIDs: Set<String> = []
