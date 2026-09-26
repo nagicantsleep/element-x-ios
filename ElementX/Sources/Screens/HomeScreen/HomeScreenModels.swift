@@ -95,8 +95,6 @@ struct HomeScreenViewState: BindableState {
     var securityBannerMode = HomeScreenSecurityBannerMode.none
     var shouldShowNewSoundBanner = false
     
-    var requiresExtraAccountSetup = false
-    
     var rooms: [HomeScreenRoom] = []
     var roomListMode: HomeScreenRoomListMode = .skeletons
     
@@ -107,6 +105,8 @@ struct HomeScreenViewState: BindableState {
     var hideInviteAvatars = false
     
     var roomListActivityVisibility: RoomListActivityVisibility = .current
+    
+    var roomListNotificationCountEnabled = false
     
     var reportRoomEnabled = false
     
@@ -198,6 +198,7 @@ struct HomeScreenRoom: Identifiable, Equatable {
     let badges: Badges
     struct Badges: Equatable {
         let isDotShown: Bool
+        let notificationCount: UInt
         let isMentionShown: Bool
         let isMuteShown: Bool
         let callBadgeType: CallBadgeType
@@ -242,7 +243,7 @@ struct HomeScreenRoom: Identifiable, Equatable {
         HomeScreenRoom(id: UUID().uuidString,
                        roomID: nil,
                        type: .placeholder,
-                       badges: .init(isDotShown: false, isMentionShown: false, isMuteShown: false, callBadgeType: .none),
+                       badges: .init(isDotShown: false, notificationCount: 0, isMentionShown: false, isMuteShown: false, callBadgeType: .none),
                        name: "Placeholder room name",
                        isDirect: false,
                        isHighlighted: false,
@@ -292,6 +293,7 @@ extension HomeScreenRoom {
                   roomID: summary.id,
                   type: type,
                   badges: .init(isDotShown: isDotShown,
+                                notificationCount: summary.unreadNotificationsCount,
                                 isMentionShown: isMentionShown,
                                 isMuteShown: isMuteShown,
                                 callBadgeType: callBadge),

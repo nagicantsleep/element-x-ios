@@ -73,6 +73,11 @@ class TimelineMediaPreviewController: QLPreviewController {
         
         super.init(nibName: nil, bundle: nil)
         
+        headerHostingController.rootView.onMoveToWindow = { [weak self] in
+            guard #available(iOS 26, *) else { return }
+            self?.updateCaptionVisibility()
+        }
+        
         view.addSubview(captionView)
         // Constraints added later as the toolbar isn't available yet.
         
@@ -128,11 +133,9 @@ class TimelineMediaPreviewController: QLPreviewController {
         super.viewWillLayoutSubviews()
         
         if let bottomBarItemsContainer {
-            // Using the toolbar's visibility doesn't work so check its frame.
-            captionView.isHidden = if #available(iOS 26, *) {
-                navigationBar?.topItem?.leftBarButtonItem?.frame(in: view) == nil
-            } else {
-                bottomBarItemsContainer.frame.minY >= view.frame.maxY
+            if #unavailable(iOS 26) {
+                // Using the toolbar's visibility doesn't work so check its frame.
+                captionView.isHidden = bottomBarItemsContainer.frame.minY >= view.frame.maxY
             }
             
             if captionView.constraints.isEmpty {
@@ -174,6 +177,15 @@ class TimelineMediaPreviewController: QLPreviewController {
     override func viewWillDisappear(_ animated: Bool) {
         barButtonTimer?.invalidate()
         barButtonTimer = nil
+    }
+    
+    @available(iOS 26, *)
+    private func updateCaptionVisibility() {
+        // The caption should be hidden alongside the header.
+        let isHeaderHidden = headerHostingController.view.window == nil
+        if captionView.isHidden != isHeaderHidden {
+            captionView.isHidden = isHeaderHidden
+        }
     }
     
     private func updateBarButtons() {
@@ -243,15 +255,17 @@ class TimelineMediaPreviewController: QLPreviewController {
     }
     
     private func handleUpdatedItems() {
-        if currentPreviewItem is TimelineMediaPreviewItem.Loading {
-            let dataSource = context.viewState.dataSource
-            if dataSource.previewController(self, previewItemAt: currentPreviewItemIndex) is TimelineMediaPreviewItem.Media {
-                refreshCurrentPreviewItem() // This will trigger loadCurrentItem automatically.
-            }
+        guard let displayedItem = currentPreviewItem as? TimelineMediaPreviewItem.Loading else { return }
+        
+        // The index may now hold a media, or a different placeholder having reached the end of
+        // the timeline, in which case what's on display is stale.
+        let dataSource = context.viewState.dataSource
+        if dataSource.previewController(self, previewItemAt: currentPreviewItemIndex) as AnyObject !== displayedItem {
+            refreshCurrentPreviewItem() // This will trigger loadCurrentItem automatically.
         }
     }
     
-    private func handleFileLoaded(itemID: TimelineItemIdentifier.EventOrTransactionID) {
+    private func handleFileLoaded(itemID: MediaPreviewItemID) {
         guard (currentPreviewItem as? TimelineMediaPreviewItem.Media)?.id == itemID else { return }
         
         // There's a bug where refreshCurrentPreviewItem completely breaks the QLPreviewController
@@ -304,11 +318,20 @@ class TimelineMediaPreviewController: QLPreviewController {
 
 private struct HeaderView: View {
     @ObservedObject var context: TimelineMediaPreviewViewModel.Context
+    /// Called whenever the header is added or removed from a window.
+    var onMoveToWindow: () -> Void = { }
+    
     private var currentItem: TimelineMediaPreviewItem {
         context.viewState.currentItem
     }
     
     var body: some View {
+        content
+            .background(WindowTrackingView(onMoveToWindow: onMoveToWindow))
+    }
+    
+    @ViewBuilder
+    private var content: some View {
         if let mediaItem = currentItem.mediaItem {
             VStack(spacing: 0) {
                 Text(mediaItem.sender.displayName ?? mediaItem.sender.id)
@@ -333,10 +356,6 @@ private struct DetailsButton: View {
     @ObservedObject var context: TimelineMediaPreviewViewModel.Context
     private var currentItem: TimelineMediaPreviewItem {
         context.viewState.currentItem
-    }
-    
-    var isHidden: Bool {
-        currentItem.mediaItem == nil
     }
     
     var body: some View {
@@ -476,6 +495,31 @@ private struct DownloadIndicatorView: View {
 }
 
 // MARK: - Helpers
+
+/// An invisible view that reports when it is added to or removed from a window.
+private struct WindowTrackingView: UIViewRepresentable {
+    let onMoveToWindow: () -> Void
+    
+    func makeUIView(context: Context) -> TrackingView {
+        let view = TrackingView()
+        view.isUserInteractionEnabled = false
+        view.onMoveToWindow = onMoveToWindow
+        return view
+    }
+    
+    func updateUIView(_ uiView: TrackingView, context: Context) {
+        uiView.onMoveToWindow = onMoveToWindow
+    }
+    
+    class TrackingView: UIView {
+        var onMoveToWindow: (() -> Void)?
+        
+        override func didMoveToWindow() {
+            super.didMoveToWindow()
+            onMoveToWindow?()
+        }
+    }
+}
 
 private extension UIView {
     func firstScrollView() -> UIScrollView? {

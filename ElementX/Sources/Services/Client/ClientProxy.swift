@@ -8,6 +8,7 @@
 
 @preconcurrency import Combine
 import CryptoKit
+import ElementCall
 import Foundation
 import MatrixRustSDK
 import OrderedCollections
@@ -21,7 +22,6 @@ class ClientProxy: ClientProxyProtocol {
     
     let mediaLoader: MediaLoaderProtocol
     let contentScanner: ContentScannerProxyProtocol?
-    private let clientQueue: DispatchQueue
     
     private var roomListService: RoomListService
     // periphery: ignore - only for retain
@@ -32,6 +32,9 @@ class ClientProxy: ClientProxyProtocol {
     private var syncService: SyncService
     // periphery: ignore - only for retain
     private var syncServiceStateUpdateTaskHandle: TaskHandle?
+    
+    // periphery:ignore - required for instance retention in the rust codebase
+    private var userProfileListenerTaskHandle: TaskHandle?
     
     // periphery:ignore - required for instance retention in the rust codebase
     private var ignoredUsersListenerTaskHandle: TaskHandle?
@@ -212,13 +215,6 @@ class ClientProxy: ClientProxyProtocol {
         
         userProfileSubject = .init(UserProfile(userID: (try? client.userId()) ?? ""))
         
-        if appSettings.automaticBackPaginationEnabled {
-            // Must be called before creating the sync service, timelines etc.
-            client.enableAutomaticBackpagination()
-        }
-        
-        clientQueue = .init(label: "ClientProxyQueue", attributes: .concurrent)
-        
         mediaLoader = MediaLoader(client: client)
         
         // Route media downloads through a content scanner when one has been configured for the server,
@@ -247,7 +243,6 @@ class ClientProxy: ClientProxyProtocol {
         capabilities = HomeserverCapabilitiesProxy(underlyingCapabilities: client.homeserverCapabilities())
         
         let configuredAppService = try await ClientProxyServices(client: client,
-                                                                 actionsSubject: actionsSubject,
                                                                  notificationSettings: notificationSettings,
                                                                  appSettings: appSettings)
         
@@ -282,9 +277,17 @@ class ClientProxy: ClientProxyProtocol {
         
         try await client.setUtdDelegate(utdDelegate: ClientDecryptionErrorDelegate(actionsSubject: actionsSubject))
         
-        loadUserAvatarURLFromCache()
+        let canSubscribeToUserProfile = if await (try? client.isProfilesSlidingSyncExtensionSupported()) == true {
+            true
+        } else {
+            false
+        }
         
-        await setupSubscriptions()
+        if !canSubscribeToUserProfile {
+            loadUserAvatarURLFromCache()
+        }
+        
+        await setupSubscriptions(canSubscribeToUserProfile: canSubscribeToUserProfile)
         
         Task {
             do {
@@ -301,6 +304,11 @@ class ClientProxy: ClientProxyProtocol {
         
         Task {
             mediaPreviewConfigListenerTaskHandle = await createMediaPreviewConfigObserver()
+        }
+        
+        Task {
+            guard case .success(true) = await isUserStatusSupported() else { return }
+            client.enableAutomaticCallStatus(enabled: true)
         }
         
         liveLocationOwnInfoUpdatesListenerTaskHandle = createLiveLocationOwnInfoUpdatesObserver()
@@ -332,6 +340,10 @@ class ClientProxy: ClientProxyProtocol {
         client.canDeactivateAccount()
     }
     
+    var totalUnreadNotifications: UInt64 {
+        client.totalUnreadNotifications()
+    }
+    
     var userIDServerName: String? {
         do {
             return try client.userIdServerName()
@@ -361,6 +373,10 @@ class ClientProxy: ClientProxyProtocol {
                 return false
             }
         }
+    }
+    
+    func makeNativeCallTransport() -> ElementCallMatrixTransportProtocol? {
+        (client as? Client).flatMap { ElementCallSDKTransport(client: $0) }
     }
     
     var isLoginWithQRCodeSupported: Bool {
@@ -690,14 +706,18 @@ class ClientProxy: ClientProxyProtocol {
         }
     }
     
-    func loadUserProfile() async -> Result<Void, ClientProxyError> {
+    func loadUserProfileIfNeeded() async -> Result<Void, ClientProxyError> {
+        // There's no need to load the profile if we're subscribed to it via /sync
+        guard userProfileListenerTaskHandle == nil else { return .success(()) }
+        
         do {
             async let displayName = client.displayName()
             async let avatarURLString = client.avatarUrl()
             
             let profile = try await UserProfile(userID: userID,
                                                 displayName: displayName,
-                                                avatarURL: avatarURLString.flatMap(URL.init))
+                                                avatarURL: avatarURLString.flatMap(URL.init),
+                                                status: userProfileSubject.value.status)
             loadCachedAvatarURLTask?.cancel()
             userProfileSubject.send(profile)
             return .success(())
@@ -710,7 +730,7 @@ class ClientProxy: ClientProxyProtocol {
     func setUserDisplayName(_ name: String) async -> Result<Void, ClientProxyError> {
         do {
             try await client.setDisplayName(name: name)
-            Task { await self.loadUserProfile() }
+            Task { await self.loadUserProfileIfNeeded() }
             return .success(())
         } catch {
             MXLog.error("Failed setting user display name with error: \(error)")
@@ -727,7 +747,7 @@ class ClientProxy: ClientProxyProtocol {
         do {
             let data = try Data(contentsOf: imageURL)
             try await client.uploadAvatar(mimeType: mimeType, data: data)
-            Task { await self.loadUserProfile() }
+            Task { await self.loadUserProfileIfNeeded() }
             return .success(())
         } catch {
             MXLog.error("Failed setting user avatar with error: \(error)")
@@ -738,7 +758,7 @@ class ClientProxy: ClientProxyProtocol {
     func removeUserAvatar() async -> Result<Void, ClientProxyError> {
         do {
             try await client.removeAvatar()
-            Task { await self.loadUserProfile() }
+            Task { await self.loadUserProfileIfNeeded() }
             return .success(())
         } catch {
             MXLog.error("Failed removing user avatar with error: \(error)")
@@ -746,10 +766,19 @@ class ClientProxy: ClientProxyProtocol {
         }
     }
     
+    func isUserStatusSupported() async -> Result<Bool, ClientProxyError> {
+        do {
+            return try await .success(client.isUserStatusSupported())
+        } catch {
+            MXLog.error("Failed detecting user status support with error: \(error)")
+            return .failure(.sdkError(error))
+        }
+    }
+    
     func setUserStatus(_ status: UserStatus.Raw) async -> Result<Void, ClientProxyError> {
         do {
             try await client.setUserStatus(status: status.rustValue)
-            Task { await self.loadUserProfile() }
+            // No need to refresh the profile, we only support user status with the profiles /sync extension.
             return .success(())
         } catch {
             MXLog.error("Failed setting user status with error: \(error)")
@@ -757,10 +786,10 @@ class ClientProxy: ClientProxyProtocol {
         }
     }
     
-    func removeUserStatus() async -> Result<Void, ClientProxyError> {
+    func clearUserStatus() async -> Result<Void, ClientProxyError> {
         do {
             try await client.clearUserStatus()
-            Task { await self.loadUserProfile() }
+            // No need to refresh the profile, we only support user status with the profiles /sync extension.
             return .success(())
         } catch {
             MXLog.error("Failed removing user status with error: \(error)")
@@ -1017,9 +1046,21 @@ class ClientProxy: ClientProxyProtocol {
         }
     }
     
+    // MARK: Presence
+    
+    func configurePresence(_ presence: ClientProxyPresence, sendImmediately: Bool) async -> Result<Void, ClientProxyError> {
+        do {
+            try await client.setPresence(presence: presence.rustValue, immediate: sendImmediately)
+            return .success(())
+        } catch {
+            MXLog.error("Failed setting presence with error: \(error)")
+            return .failure(.sdkError(error))
+        }
+    }
+    
     // MARK: - Private
     
-    private func setupSubscriptions() async {
+    private func setupSubscriptions(canSubscribeToUserProfile: Bool) async {
         networkMonitor.reachabilityPublisher
             .removeDuplicates()
             .receive(on: DispatchQueue.main)
@@ -1031,6 +1072,12 @@ class ClientProxy: ClientProxyProtocol {
                 }
             }
             .store(in: &cancellables)
+        
+        if canSubscribeToUserProfile {
+            userProfileListenerTaskHandle = try? client.subscribeToOwnProfile(listener: SDKListener.onMainActor { [weak self] profile in
+                self?.userProfileSubject.send(.init(rustUserProfile: profile))
+            })
+        }
         
         ignoredUsersListenerTaskHandle = client.subscribeToIgnoredUsers(listener: SDKListener.onMainActor { [weak self] ignoredUsers in
             self?.ignoredUsersSubject.send(ignoredUsers)
@@ -1132,7 +1179,8 @@ class ClientProxy: ClientProxyProtocol {
             
             // If we are using OAuth we want to cache the account management URL in volatile memory on the SDK side.
             // To avoid the cache being invalidated while the app is backgrounded, we cache at every sync start.
-            await cacheAccountURL()
+            // Fire and forget as it might hit the network.
+            Task { await cacheAccountURL() }
             
             // Nudge the send queue listener to re-evaluate now that we're running; a resume doesn't otherwise
             // emit, and the SDK only re-enables queues when client.resume() runs (gated behind the flag).
@@ -1203,7 +1251,8 @@ class ClientProxy: ClientProxyProtocol {
                 let profile = self.userProfileSubject.value
                 self.userProfileSubject.value = UserProfile(userID: profile.id,
                                                             displayName: profile.displayName,
-                                                            avatarURL: urlString.flatMap(URL.init))
+                                                            avatarURL: urlString.flatMap(URL.init),
+                                                            status: profile.status)
             } catch {
                 MXLog.error("Failed to look for the avatar url in the cache: \(error)")
             }
@@ -1450,6 +1499,7 @@ private final class ClientDelegateWrapper: ClientDelegate {
         authErrorCallback(isSoftLogout)
     }
     
+    // periphery:ignore - required by the SDK's delegate protocol
     func didRefreshTokens() {
         MXLog.info("Delegating session updates to the ClientSessionDelegate.")
     }
@@ -1480,7 +1530,6 @@ private struct ClientProxyServices {
     let eventStringBuilder: RoomEventStringBuilder
     
     init(client: ClientProtocol,
-         actionsSubject: PassthroughSubject<ClientProxyAction, Never>,
          notificationSettings: NotificationSettingsProxyProtocol,
          appSettings: AppSettings) async throws {
         let syncService = try await client
@@ -1512,7 +1561,6 @@ private struct ClientProxyServices {
                                                            name: "AlternateAllRooms",
                                                            notificationSettings: notificationSettings,
                                                            appSettings: appSettings)
-        try await alternateRoomSummaryProvider.setRoomList(roomListService.allRooms())
         
         staticRoomSummaryProvider = RoomSummaryProvider(roomListService: roomListService,
                                                         eventStringBuilder: eventStringBuilder,
@@ -1520,7 +1568,29 @@ private struct ClientProxyServices {
                                                         roomListPageSize: .max,
                                                         notificationSettings: notificationSettings,
                                                         appSettings: appSettings)
-        try await staticRoomSummaryProvider.setRoomList(roomListService.allRooms())
+        
+        // Setting a provider's room list will create summaries for every room so
+        // wait until the app is fully running for the alternate and static providers.
+        Task { [roomSummaryProvider, alternateRoomSummaryProvider, staticRoomSummaryProvider] in
+            // Wait for actual content (or a loaded-but-empty account) as the loading state
+            // doesn't take into account the app having build and published any summaries.
+            for await rooms in roomSummaryProvider.roomListPublisher.values {
+                if !rooms.isEmpty {
+                    break
+                }
+                
+                if case .loaded(0) = roomSummaryProvider.statePublisher.value {
+                    break
+                }
+            }
+            
+            do {
+                try await alternateRoomSummaryProvider.setRoomList(roomListService.allRooms())
+                try await staticRoomSummaryProvider.setRoomList(roomListService.allRooms())
+            } catch {
+                fatalError("Failed setting up the deferred room summary providers: \(error)")
+            }
+        }
         
         self.syncService = syncService
         self.roomListService = roomListService
@@ -1562,6 +1632,19 @@ private extension TimelineMediaVisibility {
             .off
         case .privateOnly:
             .private
+        }
+    }
+}
+
+private extension ClientProxyPresence {
+    var rustValue: PresenceState {
+        switch self {
+        case .online:
+            .online
+        case .unavailable:
+            .unavailable
+        case .offline:
+            .offline
         }
     }
 }

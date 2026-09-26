@@ -20,6 +20,24 @@
 		<key>NSStringLocalizedFormatKey</key>
 		<string>%#@COUNT@</string>
 	</dict>
+	<key>a11y_gallery_more_media</key>
+	<dict>
+		<key>COUNT</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>few</key>
+			<string></string>
+			<key>one</key>
+			<string>Galerija, %1$d više medija</string>
+			<key>other</key>
+			<string>Galerija, %1$d više medija</string>
+		</dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@COUNT@</string>
+	</dict>
 	<key>a11y_polls_percent_of_total</key>
 	<dict>
 		<key>COUNT</key>
@@ -64,10 +82,12 @@
 			<string>NSStringPluralRuleType</string>
 			<key>NSStringFormatValueTypeKey</key>
 			<string>d</string>
+			<key>few</key>
+			<string></string>
 			<key>one</key>
-			<string>%1$d attachment…</string>
+			<string>%1$d prilog…</string>
 			<key>other</key>
-			<string>%1$d attachments…</string>
+			<string>%1$d prilozi…</string>
 		</dict>
 		<key>NSStringLocalizedFormatKey</key>
 		<string>%#@COUNT@</string>
@@ -80,10 +100,12 @@
 			<string>NSStringPluralRuleType</string>
 			<key>NSStringFormatValueTypeKey</key>
 			<string>d</string>
+			<key>few</key>
+			<string></string>
 			<key>one</key>
-			<string>%1$d media item…</string>
+			<string>%1$d medijska stavka…</string>
 			<key>other</key>
-			<string>%1$d media items…</string>
+			<string>%1$d medijske stavke…</string>
 		</dict>
 		<key>NSStringLocalizedFormatKey</key>
 		<string>%#@COUNT@</string>
@@ -268,6 +290,24 @@
 		<key>NSStringLocalizedFormatKey</key>
 		<string>%#@COUNT@</string>
 	</dict>
+	<key>notification_gallery_body</key>
+	<dict>
+		<key>COUNT</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>few</key>
+			<string></string>
+			<key>one</key>
+			<string>Dijeljeni privitak %1$d</string>
+			<key>other</key>
+			<string>Dijeljeni prilozi %1$d</string>
+		</dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@COUNT@</string>
+	</dict>
 	<key>notification_invitations</key>
 	<dict>
 		<key>COUNT</key>
@@ -348,10 +388,12 @@
 			<string>NSStringPluralRuleType</string>
 			<key>NSStringFormatValueTypeKey</key>
 			<string>d</string>
+			<key>few</key>
+			<string></string>
 			<key>one</key>
-			<string>%1$d removed message</string>
+			<string>%1$d uklonjena poruka</string>
 			<key>other</key>
-			<string>%1$d removed messages</string>
+			<string>%1$d uklonjene poruke</string>
 		</dict>
 		<key>NSStringLocalizedFormatKey</key>
 		<string>%#@COUNT@</string>
@@ -568,6 +610,24 @@
 			<string>%1$@ i još %2$d želi se pridružiti ovoj sobi</string>
 			<key>other</key>
 			<string>%1$@ i još %2$d želi se pridružiti ovoj sobi</string>
+		</dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@COUNT@</string>
+	</dict>
+	<key>screen_room_selection_count</key>
+	<dict>
+		<key>COUNT</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>few</key>
+			<string></string>
+			<key>one</key>
+			<string>Odabrana je poruka %1$d</string>
+			<key>other</key>
+			<string>Odabrano je %1$d poruka</string>
 		</dict>
 		<key>NSStringLocalizedFormatKey</key>
 		<string>%#@COUNT@</string>

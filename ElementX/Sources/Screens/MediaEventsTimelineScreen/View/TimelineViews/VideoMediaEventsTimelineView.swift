@@ -15,7 +15,8 @@ struct VideoMediaEventsTimelineView: View {
     
     var body: some View {
         ContentScanningView(contentScannerService: context?.contentScannerService,
-                            mediaSource: timelineItem.content.videoInfo.source) {
+                            mediaSource: timelineItem.content.videoInfo.source,
+                            thumbnailSource: timelineItem.content.thumbnailInfo?.source) {
             Color.clear // Let the image aspect fill in place
                 .aspectRatio(1, contentMode: .fill)
                 .overlay {
@@ -84,7 +85,7 @@ struct VideoMediaEventsTimelineView_Previews: PreviewProvider, TestablePreview {
             .background(.black)
     }
     
-    private static func makeTimelineItem(caption: String? = nil, isEdited: Bool = false) -> VideoRoomTimelineItem {
+    private static func makeTimelineItem() -> VideoRoomTimelineItem {
         VideoRoomTimelineItem(id: .randomEvent,
                               timestamp: .mock,
                               isOutgoing: false,

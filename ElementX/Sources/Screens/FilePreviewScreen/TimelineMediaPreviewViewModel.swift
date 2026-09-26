@@ -31,6 +31,7 @@ class TimelineMediaPreviewViewModel: TimelineMediaPreviewViewModelType {
         actionsSubject.eraseToAnyPublisher()
     }
     
+    /// Initialises a preview spanning the whole timeline's media, staying in sync with it as it paginates.
     init(initialItem: EventBasedMessageTimelineItemProtocol,
          timelineViewModel: TimelineViewModelProtocol,
          mediaProvider: MediaProviderProtocol,
@@ -47,7 +48,8 @@ class TimelineMediaPreviewViewModel: TimelineMediaPreviewViewModelType {
         
         super.init(initialViewState: TimelineMediaPreviewViewState(dataSource: .init(itemViewStates: timelineState.itemViewStates,
                                                                                      initialItem: initialItem,
-                                                                                     paginationState: timelineState.paginationState)),
+                                                                                     paginationState: timelineState.paginationState,
+                                                                                     allowedGalleryItemTypes: timelineViewModel.context.viewState.allowedGalleryItemTypes)),
                    mediaProvider: mediaProvider)
         
         rebuildCurrentItemActions()
@@ -78,6 +80,34 @@ class TimelineMediaPreviewViewModel: TimelineMediaPreviewViewModelType {
             .store(in: &cancellables)
     }
     
+    /// Initialises the preview scoped to a single gallery's attachments. The data source is
+    /// built from the gallery's items directly and isn't kept in sync with the underlying
+    /// timeline — gallery contents don't change without the event being replaced or redacted.
+    init(galleryItem: GalleryRoomTimelineItem,
+         initialIndex: Int,
+         timelineViewModel: TimelineViewModelProtocol,
+         mediaProvider: MediaProviderProtocol,
+         photoLibraryManager: PhotoLibraryManagerProtocol,
+         userIndicatorController: UserIndicatorControllerProtocol,
+         appMediator: AppMediatorProtocol) {
+        self.timelineViewModel = timelineViewModel
+        self.mediaProvider = mediaProvider
+        self.photoLibraryManager = photoLibraryManager
+        self.userIndicatorController = userIndicatorController
+        self.appMediator = appMediator
+        
+        super.init(initialViewState: TimelineMediaPreviewViewState(dataSource: .init(galleryItem: galleryItem,
+                                                                                     initialIndex: initialIndex)),
+                   mediaProvider: mediaProvider)
+        
+        rebuildCurrentItemActions()
+        
+        timelineViewModel.context.$viewState.map(\.canCurrentUserRedactSelf)
+            .merge(with: timelineViewModel.context.$viewState.map(\.canCurrentUserRedactOthers))
+            .sink { [weak self] _ in self?.rebuildCurrentItemActions() }
+            .store(in: &cancellables)
+    }
+    
     override func process(viewAction: TimelineMediaPreviewViewAction) {
         switch viewAction {
         case .updateCurrentItem(let item):
@@ -98,8 +128,8 @@ class TimelineMediaPreviewViewModel: TimelineMediaPreviewViewModelType {
             default:
                 MXLog.error("Received unexpected action: \(action)")
             }
-        case .redactConfirmation(let item):
-            redactItem(item)
+        case .redactConfirmation(let item, let reason):
+            redactItem(item, reason: reason)
         case .timelineEndReached:
             showTimelineEndIndicator()
         }
@@ -137,17 +167,20 @@ class TimelineMediaPreviewViewModel: TimelineMediaPreviewViewModelType {
     }
     
     /// Scans the media when a content scanner is configured, returning whether it's safe to be downloaded
-    /// and previewed, reflecting the scan's progress and outcome in the current item.
+    /// and previewed, reflecting the scan's progress and outcome in the current item. Both the media and
+    /// its thumbnail are scanned as either being downloaded through the scanner can flag the media.
     private func checkSourceIsSafeIfNeeded(for mediaItem: TimelineMediaPreviewItem.Media, source: MediaSourceProxy) async -> Bool {
         guard let contentScannerService else { return true }
         
+        let sources = [source, mediaItem.thumbnailMediaSource].compactMap { $0 }
+        
         // Only reflect the scanning state when there's no cached verdict, so that
         // scanned items don't flash the scanning indicator when they're revisited.
-        if contentScannerService.scanResultFromSource(source) == nil {
+        if contentScannerService.scanResultFromSources(sources) == nil {
             setCurrentItem(.contentScan(.init(media: mediaItem, state: .scanning)))
         }
         
-        switch await contentScannerService.loadScanResultFromSource(source) {
+        switch await contentScannerService.loadScanResultFromSources(sources) {
         case .success(true):
             finishScan(with: .media(mediaItem), for: mediaItem)
             return true
@@ -196,9 +229,9 @@ class TimelineMediaPreviewViewModel: TimelineMediaPreviewViewModelType {
                                            canCurrentUserRedactOthers: timelineContext.viewState.canCurrentUserRedactOthers,
                                            canCurrentUserPin: timelineContext.viewState.canCurrentUserPin,
                                            pinnedEventIDs: timelineContext.viewState.pinnedEventIDs,
-                                           isDM: timelineContext.viewState.isDM,
                                            isViewSourceEnabled: timelineContext.viewState.isViewSourceEnabled,
                                            areThreadsEnabled: timelineContext.viewState.areThreadsEnabled,
+                                           isMultiSelectEnabled: timelineContext.viewState.canSelectMessages,
                                            timelineKind: timelineContext.viewState.timelineKind,
                                            emojiProvider: timelineContext.viewState.emojiProvider)
                 .makeActions()
@@ -215,16 +248,14 @@ class TimelineMediaPreviewViewModel: TimelineMediaPreviewViewModelType {
         state.previewControllerDriver.send(.dismissDetailsSheet)
         
         do {
-            switch mediaItem.timelineItem {
-            case is AudioRoomTimelineItem, is FileRoomTimelineItem:
+            switch mediaItem.kind {
+            case .file:
                 state.previewControllerDriver.send(.exportFile(.init(url: fileURL)))
                 return // Don't show the indicator.
-            case is ImageRoomTimelineItem:
+            case .image:
                 try await photoLibraryManager.addResource(.photo, at: fileURL).get()
-            case is VideoRoomTimelineItem:
+            case .video:
                 try await photoLibraryManager.addResource(.video, at: fileURL).get()
-            default:
-                break
             }
             
             showSavedIndicator()
@@ -237,8 +268,8 @@ class TimelineMediaPreviewViewModel: TimelineMediaPreviewViewModelType {
         }
     }
     
-    private func redactItem(_ item: TimelineMediaPreviewItem.Media) {
-        timelineViewModel.context.send(viewAction: .handleTimelineItemMenuAction(itemID: item.timelineItem.id, action: .redact(isMedia: true)))
+    private func redactItem(_ item: TimelineMediaPreviewItem.Media, reason: String) {
+        timelineViewModel.context.send(viewAction: .redactConfirmed(itemID: item.timelineItem.id, reason: reason))
         state.bindings.redactConfirmationItem = nil
         state.previewControllerDriver.send(.dismissDetailsSheet)
         actionsSubject.send(.dismiss)

@@ -14,12 +14,14 @@ struct SettingsScreenCoordinatorParameters {
     let appSettings: AppSettings
     let isBugReportServiceEnabled: Bool
     let isInSecondaryWindow: Bool
+    let userIndicatorController: UserIndicatorControllerProtocol
 }
 
 enum SettingsScreenCoordinatorAction {
     case dismiss
     case logout
     case secureBackup
+    case userStatusEmojiPicker(EmojiPickerScreenContinuation)
     case analytics
     case appLock
     case bugReport
@@ -50,7 +52,8 @@ final class SettingsScreenCoordinator: CoordinatorProtocol {
         viewModel = SettingsScreenViewModel(userSession: parameters.userSession,
                                             appSettings: parameters.appSettings,
                                             isBugReportServiceEnabled: parameters.isBugReportServiceEnabled,
-                                            isInSecondaryWindow: parameters.isInSecondaryWindow)
+                                            isInSecondaryWindow: parameters.isInSecondaryWindow,
+                                            userIndicatorController: parameters.userIndicatorController)
         
         viewModel.actions
             .sink { [weak self] action in
@@ -59,6 +62,8 @@ final class SettingsScreenCoordinator: CoordinatorProtocol {
                 switch action {
                 case .close:
                     actionsSubject.send(.dismiss)
+                case let .userStatusEmojiPicker(continuation):
+                    actionsSubject.send(.userStatusEmojiPicker(continuation))
                 case .linkNewDevice:
                     actionsSubject.send(.linkNewDevice)
                 case let .manageAccount(url):

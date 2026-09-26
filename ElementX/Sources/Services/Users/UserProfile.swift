@@ -47,7 +47,7 @@ nonisolated struct UserProfile: Hashable, Identifiable {
         id = rustRoomHero.userId
         displayName = rustRoomHero.displayName
         avatarURL = rustRoomHero.avatarUrl.flatMap(URL.init(string:))
-        status = .init() // Requires https://github.com/matrix-org/matrix-rust-sdk/pull/6733
+        status = .init(rustStatus: rustRoomHero.status, rustCall: rustRoomHero.call)
     }
     
     init(member: RoomMemberProxyProtocol) {
@@ -127,6 +127,7 @@ nonisolated extension UserStatus.Raw {
         emoji = Character(rustStatus.emoji)
     }
     
+    // periphery:ignore - might be useful to have
     var rustValue: MatrixRustSDK.UserStatus {
         .init(emoji: String(emoji), text: text)
     }
@@ -137,6 +138,7 @@ nonisolated extension UserStatus.Call {
         joinedDate = rustCall.callJoinedTs.map { Date(timeIntervalSince1970: Double($0)) }
     }
     
+    // periphery:ignore - might be useful to have
     var rustValue: MatrixRustSDK.UserCall {
         .init(callJoinedTs: joinedDate.map { UInt64($0.timeIntervalSince1970) })
     }
@@ -146,6 +148,7 @@ nonisolated extension UserStatus.Call {
 
 struct SearchUsersResults {
     let results: [UserProfile]
+    // periphery:ignore - documents the schema, parsed but not consumed yet
     let limited: Bool
 }
 

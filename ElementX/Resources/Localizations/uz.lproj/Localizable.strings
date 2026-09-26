@@ -6,11 +6,17 @@
 "a11y_collapse_message_text_field" = "Xabar matni maydonini kichraytirish";
 "a11y_create_poll_votes_allowed_decrease" = "Decrease votes allowed per person";
 "a11y_create_poll_votes_allowed_increase" = "Increase votes allowed per person";
+"a11y_custom_emoji" = "Custom emoji";
 "a11y_delete" = "Oʻchirish";
 "a11y_duration" = "Davomiyligi: %1$@";
 "a11y_edit_avatar" = "Avatarni tahrirlash";
 "a11y_edit_room_address_hint" = "To'liq manzil %1$@ bo'ladi";
 "a11y_expand_message_text_field" = "Xabar matni maydonini kengaytirish";
+"a11y_gallery_attachment" = "Gallery, attachment %1$d";
+"a11y_gallery_failed_scan" = "Gallery, failed scan %1$d";
+"a11y_gallery_image" = "Gallery, image %1$d";
+"a11y_gallery_scanning" = "Gallery, scanning %1$d";
+"a11y_gallery_video" = "Gallery, video %1$d";
 "a11y_hide_password" = "Parolni yashirish";
 "a11y_info" = "Maʻlumot";
 "a11y_join_call" = "Qoʻngʻiroqga qoʻshilish";
@@ -51,6 +57,7 @@
 "a11y_start_call" = "Qoʻngʻiroqni boshlash";
 "a11y_start_video_call" = "Video chaqiruvni boshlash";
 "a11y_start_voice_call" = "Ovozli qo‘ng‘iroq qilish";
+"a11y_status" = "Status";
 "a11y_tombstoned_room" = "Arxivlangan xona";
 "a11y_user_menu" = "Foydalanuvchi menyusi";
 "a11y_video_preview" = "Video preview";
@@ -167,6 +174,7 @@
 "action_retry_decryption" = "Shifrni ochishni qayta urinish";
 "action_save" = "Saqlash";
 "action_search" = "Qidirmoq";
+"action_select" = "Select";
 "action_select_all" = "Barchasini tanlash";
 "action_send" = "Yuborish";
 "action_send_edited_message" = "Tahrirlangan xabarni yuboring";
@@ -368,6 +376,7 @@
 "common_success" = "Muvaffaqiyat";
 "common_suggested" = "Tavsiya etilgan";
 "common_suggestions" = "Tavsiyalar";
+"common_switch_accounts" = "Switch accounts";
 "common_syncing" = "Sinxronlash";
 "common_text" = "Matn";
 "common_third_party_notices" = "Uchinchi tomon bildirishnomalari";
@@ -387,13 +396,6 @@
 "common_unsupported_call" = "Qo‘llab-quvvatlanmaydigan chaqiruv";
 "common_unsupported_event" = "Qo'llab-quvvatlanmagan hodisa";
 "common_user_started_a_call" = "%1$@ started a call";
-"common_user_status_away" = "Away";
-"common_user_status_be_right_back" = "Be right back";
-"common_user_status_custom" = "Custom…";
-"common_user_status_focus_time" = "Focus time";
-"common_user_status_in_a_meeting" = "In a meeting";
-"common_user_status_on_a_call" = "On a call";
-"common_user_status_on_the_road" = "On the road";
 "common_username" = "Foydalanuvchi nomi";
 "common_verification_cancelled" = "Tasdiqlash bekor qilindi";
 "common_verification_complete" = "Tasdiqlash yakunlandi";
@@ -420,7 +422,7 @@
 "confirm_recovery_key_banner_secondary_button_title" = "Tiklash kalitini unutdingizmi?";
 "confirm_recovery_key_banner_title" = "Kalit saqlash joyi sinxronlashmagan";
 "content_scanner_not_found" = "Download not available.";
-"content_scanner_not_found_title" = "File not found";
+"content_scanner_not_found_title" = "Something went wrong";
 "content_scanner_scanning" = "Scanning…";
 "content_scanner_unsafe_message" = "Preview and download have been disabled.";
 "content_scanner_unsafe_title" = "The file is not safe";
@@ -495,6 +497,11 @@
 "error_no_compatible_app_found" = "Bu amalni bajarish uchun mos ilova topilmadi.";
 "error_room_address_already_exists" = "Bu xona manzili allaqachon mavjud. Xona manzili maydonini tahrirlang yoki xona nomini o‘zgartiring";
 "error_room_address_invalid_symbols" = "Ayrim belgilarga ruxsat berilmagan. Faqat harf, raqam va quyidagi belgilar ishlaydi! $ &’() * + /; =? @ [ ] -. _";
+"error_sending_failure_invalid_mime_type" = "Invalid mime type: %@";
+"error_sending_failure_missing_media_content" = "Missing media content";
+"error_sending_failure_other" = "Error details: %@";
+"error_sending_failure_sending_from_unverified_device" = "Sending from unverified device";
+"error_sending_failure_unknown" = "Unknown error";
 "error_some_messages_have_not_been_sent" = "Bazi xabarlar yuborilmagan";
 "error_unknown" = "Kechirasiz, xatolik yuz berdi";
 "error.account_already_logged_in" = "Bu qurilmada allaqachon %1$@ hisobiga kirgansiz.";
@@ -524,6 +531,8 @@
 "notification_invitation_action_reject" = "Rad etish";
 "notification_invite_body" = "Sizni suhbatga taklif qildi";
 "notification_invite_body_with_sender" = "%1$@ sizni suhbatga taklif qildi";
+"notification_knock_request_body" = "Requested to join";
+"notification_live_location_started_body" = "Started sharing their live location";
 "notification_mentioned_you_body" = "%1$@ sizni eslatib oʻtdi";
 "notification_new_messages" = "Yangi xabarlar";
 "notification_reaction_body" = "%1$@bilan munosabat bildiring";
@@ -714,8 +723,16 @@
 "screen_change_server_error_unauthorized_homeserver_title" = "Hisob provayderi %1$@ ga ruxsat berilmagan.";
 "screen_change_server_form_header" = "Uy serverining URL manzili";
 "screen_change_server_form_notice" = "Domen manzilini kiriting.";
+"screen_change_server_navigation_title_login" = "Sign in";
+"screen_change_server_navigation_title_register" = "Create account";
 "screen_change_server_subtitle" = "Serveringizning manzili nima?";
+"screen_change_server_textfield_footer_login" = "If your account is provided by your company or a community, then change the account provider (example: companyname.com).";
+"screen_change_server_textfield_footer_register" = "Create an account on matrix.org for free. If you want to create an account with a different provider, then change it accordingly (example: communityname.org).";
+"screen_change_server_textfield_header" = "Account provider";
+"screen_change_server_textfield_placeholder" = "example.com";
 "screen_change_server_title" = "Serveringizni tanlang";
+"screen_change_server_title_login" = "Enter your account provider";
+"screen_change_server_title_register" = "Choose an account provider";
 "screen_chat_backup_key_backup_action_disable" = "Zaxiralashni o'chirib qo'ying";
 "screen_chat_backup_key_backup_action_enable" = "Zaxiralashni yoqing";
 "screen_chat_backup_key_backup_description" = "Bu sizga chat tarixingizni har qanday yangi qurilmalarda ko‘rish imkonini beradi hamda chatlar zaxirasi va raqamli identifikatsiya uchun talab qilinadi. %1$@.";
@@ -935,6 +952,10 @@
 "screen_knock_requests_list_empty_state_title" = "Qo‘shilish so‘rovi kutilmayapti";
 "screen_knock_requests_list_initial_loading_title" = "Qo‘shilish uchun so‘rovlar yuklanmoqda…";
 "screen_knock_requests_list_title" = "Qo‘shilish uchun so‘rovlar";
+"screen_labs_enable_gallery" = "Gallery messages";
+"screen_labs_enable_gallery_description" = "Send multiple images or videos in one go. Stable on mobile, but not yet supported by web.";
+"screen_labs_enable_knocking" = "Ask to join";
+"screen_labs_enable_knocking_description" = "Users can request access to a room that is not open for anyone to join. Stable on mobile, web implementation exists but is experimental.";
 "screen_labs_enable_threads" = "Mavzu javoblarini yoqish";
 "screen_labs_enable_threads_description" = "Ushbu oʻzgartirishni qoʻllash uchun ilova qayta ishga tushadi.";
 "screen_labs_header_description" = "Ishlab chiqarishdagi eng so‘nggi g‘oyalarimizni sinab ko‘ring. Bu xususiyatlar hali yakuniy emas; ular beqaror bo‘lishi va o‘zgarishi mumkin.";
@@ -955,6 +976,7 @@
 "screen_link_new_device_desktop_step3" = "Bu qurilma bilan QR kodni skanerlang";
 "screen_link_new_device_desktop_submit" = "Skanerlashga tayyor";
 "screen_link_new_device_desktop_title" = "QR kodni olish uchun desktop kompyuterda %1$@ ilovasini oching";
+"screen_link_new_device_desktop_warning" = "Only scan a QR code after following the steps above on your own device. Never scan a code sent by another person.";
 "screen_link_new_device_enter_number_error_numbers_do_not_match" = "Raqamlar mos kelmaydi";
 "screen_link_new_device_enter_number_notice" = "2 xonali kodni kiriting";
 "screen_link_new_device_enter_number_subtitle" = "Bu boshqa qurilmangizga ulanish xavfsiz ekanligini tasdiqlaydi.";
@@ -981,7 +1003,7 @@
 "screen_live_location_sheet_nobody_sharing" = "Hech kim joylashuvini ulashmayapti";
 "screen_live_location_sheet_sharing_live_location" = "Jonli joylashuvni ulashish";
 "screen_live_location_sheet_title" = "Xaritada";
-"screen_local_network_opt_in_subtitle" = "Your homeserver is on your local network. To connect, Element needs permission to reach devices on this network.";
+"screen_local_network_opt_in_subtitle" = "Your homeserver is on your local network. To connect, %1$@ needs permission to reach devices on this network.";
 "screen_local_network_opt_in_title" = "Allow access to local network";
 "screen_login_error_deactivated_account" = "Bu hisob o‘chirilgan.";
 "screen_login_error_invalid_credentials" = "Notog'ri foydalanuvchi nomi va/yoki parol";
@@ -1125,8 +1147,6 @@
 "screen_polls_history_filter_ongoing" = "Jarayonda";
 "screen_polls_history_filter_past" = "Oʻtgan";
 "screen_polls_history_title" = "Soʻrovnomalar";
-"screen_preferences_user_status_custom_hint" = "Custom status…";
-"screen_preferences_user_status_placeholder" = "What's your status?";
 "screen_push_history_title" = "Bildirishnoma tarixi";
 "screen_qr_code_login_connecting_subtitle" = "Xavfsiz aloqa oʻrnatish";
 "screen_qr_code_login_connection_note_secure_state_description" = "Yangi qurilmaga xavfsiz ulanish amalga oshirilmadi. Mavjud qurilmalaringiz hali ham xavfsiz va ular haqida qaygʻurishingiz shart emas.";
@@ -1271,6 +1291,11 @@
 "screen_room_change_role_section_users" = "Azolar";
 "screen_room_change_role_unsaved_changes_description" = "Sizda saqlanmagan oʻzgarishlar bor";
 "screen_room_change_role_unsaved_changes_title" = "O‘zgartirishlarni saqlaysizmi?";
+"screen_room_confirm_removal_message" = "Are you sure you wish to remove this message?";
+"screen_room_confirm_removal_reason_label" = "Reason (optional)";
+"screen_room_confirm_removal_reason_placeholder" = "Enter…";
+"screen_room_confirm_removal_reason_supporting_text" = "(Optional)";
+"screen_room_confirm_removal_title" = "Confirm removal";
 "screen_room_details_add_topic_title" = "Mavzu qo'shish";
 "screen_room_details_badge_encrypted" = "Shifrlangan";
 "screen_room_details_badge_not_encrypted" = "Shifrlanmagan";
@@ -1316,6 +1341,7 @@
 "screen_room_invite_again_alert_message" = "Ularni yana taklif qilmoqchimisiz?";
 "screen_room_invite_again_alert_title" = "Siz bu chatda yolg'izsiz";
 "screen_room_live_location_banner" = "Jonli joylashuvni ulashish";
+"screen_room_maximum_messages_selected" = "Maximum messages selected";
 "screen_room_member_details_block_alert_action" = "Bloklash";
 "screen_room_member_details_block_alert_description" = "Bloklangan foydalanuvchilar sizga xabar yubora olmaydi va ularning barcha xabarlari yashiriladi. Ularni istalgan vaqtda blokdan chiqarishingiz mumkin.";
 "screen_room_member_details_block_user" = "Foydalanuvchini bloklash";
@@ -1357,6 +1383,7 @@
 "screen_room_notification_settings_mentions_only_disclaimer" = "Uy serveringiz shifrlangan xonalarda ushbu imkoniyatni qoʻllab-quvvatlamaydi, shuning uchun bu xonadan bildirishnomalar olmaysiz.";
 "screen_room_notification_settings_mode_all_messages" = "Barcha xabarlar";
 "screen_room_notification_settings_mode_mentions_and_keywords" = "Faqat eslatmalar va kalit so'zlar";
+"screen_room_notification_settings_mode_mute" = "Mute";
 "screen_room_notification_settings_room_custom_settings_title" = "Bu xonada menga xabar bering";
 "screen_room_pinned_banner_indicator" = "%1$@ʼdan %2$@";
 "screen_room_pinned_banner_indicator_description" = "%1$@ ta qadalgan xabar";
@@ -1417,6 +1444,8 @@
 "screen_roomlist_filter_invites_empty_state_title" = "Sizda hech qanday kutilayotgan takliflar yoʻq.";
 "screen_roomlist_filter_low_priority" = "Past darajali";
 "screen_roomlist_filter_low_priority_empty_state_title" = "Sizda hali past ustuvor chatlar yoʻq";
+"screen_roomlist_filter_mention" = "Mention";
+"screen_roomlist_filter_mention_empty_state_title" = "You don’t have any unread mentions";
 "screen_roomlist_filter_mixed_empty_state_subtitle" = "Boshqa suhbatlaringizni koʻrish uchun filtrlarni bekor qilishingiz mumkin";
 "screen_roomlist_filter_mixed_empty_state_title" = "Sizda bu tanlov uchun chatlar yo‘q";
 "screen_roomlist_filter_people" = "Odamlar";
@@ -1503,6 +1532,8 @@
 "screen_session_verification_request_title" = "Tasdiqlash talab qilindi";
 "screen_session_verification_they_dont_match" = "Ular mos kelmaydi";
 "screen_session_verification_they_match" = "Ular mos keladi";
+"screen_session_verification_unavailable_subtitle" = "Please use another device or recovery key.";
+"screen_session_verification_unavailable_title" = "Verification with this device is currently unavailable";
 "screen_session_verification_use_another_device_subtitle" = "Bu yerdan tasdiqlashni boshlashdan oldin, boshqa qurilmada ilovaning ochiq ekanligiga ishonch hosil qiling.";
 "screen_session_verification_use_another_device_title" = "Ilovani boshqa tasdiqlangan qurilmada oching";
 "screen_session_verification_user_initiator_subtitle" = "Qo‘shimcha xavfsizlik chorasi sifatida, qurilmalaringizdagi emojilar to‘plamini solishtirish orqali ushbu foydalanuvchini tasdiqlang. Buni ishonchli aloqa usuli yordamida amalga oshiring.";
@@ -1515,6 +1546,14 @@
 "screen_session_verification_waiting_subtitle" = "Qabul qilinganingizdan so‘ng, tasdiqlash jarayonini davom ettirishingiz mumkin bo‘ladi.";
 "screen_session_verification_waiting_to_accept_subtitle" = "Davom etish uchun boshqa seansda tekshirish jarayonini boshlash soʻrovini qabul qiling.";
 "screen_session_verification_waiting_to_accept_title" = "Soʻrovni qabul qilish kutilmoqda";
+"screen_settings_user_status_away" = "Away";
+"screen_settings_user_status_be_right_back" = "Be right back";
+"screen_settings_user_status_custom" = "Custom…";
+"screen_settings_user_status_custom_hint" = "Custom status…";
+"screen_settings_user_status_focus_time" = "Focus time";
+"screen_settings_user_status_in_a_meeting" = "In a meeting";
+"screen_settings_user_status_on_the_road" = "On the road";
+"screen_settings_user_status_placeholder" = "What's your status?";
 "screen_share_location_live_location_disclaimer_title" = "Jonli joylashuv tarixingiz chat-xonada saqlanadi va sessiya tugaganidan keyin homiylarga ko‘rinadi.";
 "screen_share_location_live_location_duration_picker_title" = "Jonli joylashuvingiz qancha vaqt ulashilishini tanlang.";
 "screen_share_location_live_location_missing_permissions" = "Bu xonada jonli joylashuvingizni ulashish uchun sizda ruxsat yoʻq";
@@ -1705,6 +1744,7 @@
 "troubleshoot_notifications_test_push_loop_back_failure_2" = "Xato: %1$@.";
 "troubleshoot_notifications_test_push_loop_back_failure_3" = "Xatolik, push qilishni sinab bo‘lmadi.";
 "troubleshoot_notifications_test_push_loop_back_failure_4" = "Xatolik, taym aut pushni kutmoqda.";
+"troubleshoot_notifications_test_push_loop_back_failure_rate_limit" = "Error: the push gateway is rate limiting this device, so notifications won't be reliable. Please set up a different push gateway.";
 "troubleshoot_notifications_test_push_loop_back_success" = "Tsiklni orqaga surish %1$d millisekund davom etdi.";
 "troubleshoot_notifications_test_push_loop_back_title" = "Test Push loop back";
 "troubleshoot_notifications_test_unified_push_description" = "UnifiedPush distribyutorlari mavjudligiga ishonch hosil qiling.";

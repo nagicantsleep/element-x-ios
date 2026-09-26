@@ -19,6 +19,7 @@ class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDeleg
     private let stateMachine: AppCoordinatorStateMachine
     private let navigationRootCoordinator: NavigationRootCoordinator
     private let userSessionStore: UserSessionStoreProtocol
+    // periphery:ignore - retaining purpose
     private let targetConfiguration: Target.ConfigurationResult
     private let appMediator: AppMediator
     private let appSettings: AppSettings
@@ -113,7 +114,7 @@ class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDeleg
         
         userIndicatorController = UserIndicatorController()
         
-        elementCallService = ElementCallService()
+        elementCallService = ElementCallService(appSettings: appSettings)
         
         navigationRootCoordinator = NavigationRootCoordinator()
         
@@ -687,7 +688,6 @@ class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDeleg
                                                         appMediator: appMediator,
                                                         appSettings: appSettings,
                                                         appHooks: appHooks,
-                                                        analytics: analyticsService,
                                                         userIndicatorController: userIndicatorController)
         coordinator.delegate = self
         
@@ -833,6 +833,9 @@ class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDeleg
         
         Task { await pauseClientServices(isBackgroundTask: false) }
         userSessionFlowCoordinator?.stop()
+        // Leaves any ongoing call and releases the native call stack, which a soft logout would
+        // otherwise leave running against a session that can no longer reach the server.
+        elementCallService.setUserSession(nil)
         
         guard !isSoft else {
             stateMachine.processEvent(.showSoftLogout)
@@ -856,7 +859,6 @@ class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDeleg
             tearDownUserSession()
             
             appSettings.resetSessionSpecificSettings()
-            appSettings.mapTilerSettings.reset()
             appHooks.remoteSettingsHook.reset(appSettings)
             
             // Reset analytics
@@ -903,7 +905,7 @@ class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDeleg
             fatalError("User session not setup")
         }
         
-        elementCallService.setClientProxy(userSession.clientProxy)
+        elementCallService.setUserSession(userSession)
     }
     
     private func configureNotificationManager() {
@@ -1026,7 +1028,7 @@ class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDeleg
         options.onLastRunStatusDetermined = { status, event in
             guard case .didCrash = status, let event else { return }
             MXLog.error("Sentry detected a crash in the previous run: \(event.eventId.sentryIdString)")
-            bugReportService.lastCrashEventID = event.eventId.sentryIdString
+            bugReportService.lastCrashEventIDSubject.send(event.eventId.sentryIdString)
         }
         
         // Mirror every crash into our own logs (which ship with rageshakes) before it's sent to Sentry.
@@ -1291,6 +1293,10 @@ class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDeleg
         guard let userSession else {
             return
         }
+        
+        // Configure the background-refresh sync to carry set_presence=offline so it doesn't mark the
+        // user online or idle. Note: If already online/idle then setting offline shouldn't override that.
+        _ = await userSession.clientProxy.configurePresence(.offline, sendImmediately: false)
         
         await resumeClientServices()
         

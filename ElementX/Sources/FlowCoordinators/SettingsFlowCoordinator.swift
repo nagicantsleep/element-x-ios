@@ -25,7 +25,6 @@ class SettingsFlowCoordinator: FlowCoordinatorProtocol {
     
     // periphery:ignore - retaining purpose
     private var appLockSetupFlowCoordinator: AppLockSetupFlowCoordinator?
-    // periphery:ignore - retaining purpose
     private var bugReportFlowCoordinator: BugReportFlowCoordinator?
     // periphery:ignore - retaining purpose
     private var encryptionSettingsFlowCoordinator: EncryptionSettingsFlowCoordinator?
@@ -60,7 +59,7 @@ class SettingsFlowCoordinator: FlowCoordinatorProtocol {
         case .settings:
             presentSettingsScreen(animated: animated)
         case .chatBackupSettings:
-            startEncryptionSettingsFlow(animated: animated)
+            startEncryptionSettingsFlow()
         default:
             break
         }
@@ -76,7 +75,8 @@ class SettingsFlowCoordinator: FlowCoordinatorProtocol {
         let settingsScreenCoordinator = SettingsScreenCoordinator(parameters: .init(userSession: flowParameters.userSession,
                                                                                     appSettings: flowParameters.appSettings,
                                                                                     isBugReportServiceEnabled: flowParameters.bugReportService.isEnabled,
-                                                                                    isInSecondaryWindow: isInSecondaryWindow))
+                                                                                    isInSecondaryWindow: isInSecondaryWindow,
+                                                                                    userIndicatorController: flowParameters.userIndicatorController))
         
         settingsScreenCoordinator.actions
             .sink { [weak self] action in
@@ -88,7 +88,9 @@ class SettingsFlowCoordinator: FlowCoordinatorProtocol {
                 case .logout:
                     actionsSubject.send(.runLogoutFlow)
                 case .secureBackup:
-                    startEncryptionSettingsFlow(animated: true)
+                    startEncryptionSettingsFlow()
+                case let .userStatusEmojiPicker(continuation):
+                    presentEmojiPicker(emojiPickerContinuation: continuation)
                 case .linkNewDevice:
                     startLinkNewDeviceFlow()
                 case let .manageAccount(url):
@@ -138,7 +140,7 @@ class SettingsFlowCoordinator: FlowCoordinatorProtocol {
         navigationStackCoordinator.push(coordinator)
     }
     
-    private func startEncryptionSettingsFlow(animated: Bool) {
+    private func startEncryptionSettingsFlow() {
         let coordinator = EncryptionSettingsFlowCoordinator(parameters: .init(userSession: flowParameters.userSession,
                                                                               appSettings: flowParameters.appSettings,
                                                                               appHooks: flowParameters.appHooks,
@@ -155,6 +157,25 @@ class SettingsFlowCoordinator: FlowCoordinatorProtocol {
         
         encryptionSettingsFlowCoordinator = coordinator
         coordinator.start()
+    }
+    
+    // Product (Option B): `.userDetails` was removed along with the Settings identity
+    // header, so upstream's presentUserDetailsEditScreen() is intentionally absent here.
+    private func presentEmojiPicker(emojiPickerContinuation: EmojiPickerScreenContinuation) {
+        let coordinator = EmojiPickerScreenCoordinator(parameters: .init(mode: .userStatus,
+                                                                         selectedEmojis: [],
+                                                                         emojiProvider: flowParameters.emojiProvider,
+                                                                         continuation: emojiPickerContinuation))
+        coordinator.actions
+            .sink { [weak self] action in
+                switch action {
+                case .dismiss:
+                    self?.navigationStackCoordinator.setSheetCoordinator(nil)
+                }
+            }
+            .store(in: &cancellables)
+        
+        navigationStackCoordinator.setSheetCoordinator(coordinator)
     }
     
     private func startLinkNewDeviceFlow() {
