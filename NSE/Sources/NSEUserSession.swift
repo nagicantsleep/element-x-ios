@@ -21,9 +21,7 @@ final nonisolated class NSEUserSession: NSEUserSessionProtocol {
     private let baseClient: ClientProtocol
     private let notificationClient: NotificationClient
     private let userID: String
-    private(set) lazy var mediaProvider: MediaProviderProtocol = MediaProvider(mediaLoader: MediaLoader(client: baseClient),
-                                                                               imageCache: .onlyOnDisk,
-                                                                               homeserverReachabilityPublisher: nil)
+    private(set) var mediaProvider: MediaProviderProtocol
     private let delegateHandle: TaskHandle?
     
     var mediaPreviewVisibility: MediaPreviews {
@@ -73,6 +71,9 @@ final nonisolated class NSEUserSession: NSEUserSessionProtocol {
             MXLog.error("Failed configuring offline presence before notification processing with error: \(error)")
         }
         delegateHandle = try baseClient.setDelegate(delegate: ClientDelegateWrapper())
+        mediaProvider = MediaProvider(mediaLoader: MediaLoader(client: baseClient),
+                                      imageCache: .onlyOnDisk,
+                                      homeserverReachabilityPublisher: nil)
         
         // Inject the content scanner so the SDK gates the media it downloads whilst building the notification.
         if let contentScannerURL = appSettings.contentScannerURL.publisher.value {

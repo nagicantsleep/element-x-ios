@@ -113,7 +113,6 @@ class UserSessionFlowCoordinator: FlowCoordinatorProtocol {
         contactsStackCoordinator.setRootCoordinator(StartChatScreenCoordinator(parameters: .init(userSession: flowParameters.userSession,
                                                                                                  userDiscoveryService: UserDiscoveryService(clientProxy: flowParameters.userSession.clientProxy),
                                                                                                  userIndicatorController: flowParameters.userIndicatorController,
-                                                                                                 appSettings: flowParameters.appSettings,
                                                                                                  analytics: flowParameters.analytics)))
         contactsTabDetails = .init(tag: HomeTab.contacts, title: L10n.screenHomeTabContacts, icon: \.user, selectedIcon: \.userSolid)
         
@@ -121,9 +120,9 @@ class UserSessionFlowCoordinator: FlowCoordinatorProtocol {
         let userProfileScreenCoordinator = UserProfileScreenCoordinator(parameters: .init(userID: flowParameters.userSession.clientProxy.userID,
                                                                                           isPresentedModally: false,
                                                                                           userSession: flowParameters.userSession,
-                                                                                          userIndicatorController: flowParameters.userIndicatorController,
+                                                                                          appHooks: flowParameters.appHooks,
                                                                                           analytics: flowParameters.analytics,
-                                                                                          appSettings: flowParameters.appSettings))
+                                                                                          userIndicatorController: flowParameters.userIndicatorController))
         profileStackCoordinator.setRootCoordinator(userProfileScreenCoordinator)
         self.profileStackCoordinator = profileStackCoordinator
         self.userProfileScreenCoordinator = userProfileScreenCoordinator
@@ -324,30 +323,8 @@ class UserSessionFlowCoordinator: FlowCoordinatorProtocol {
             }
             .store(in: &cancellables)
         
-        let reachabilityNotificationID = "io.element.elementx.reachability.notification"
-        userSession.clientProxy.homeserverReachabilityPublisher.removeDuplicates()
-            .combineLatest(flowParameters.appMediator.networkMonitor.reachabilityPublisher.removeDuplicates())
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] homeserverReachability, networkReachability in
-                MXLog.info("Homeserver reachability: \(homeserverReachability)")
-                
-                guard let self else { return }
-                switch (networkReachability, homeserverReachability) {
-                case (.unreachable, _):
-                    flowParameters.userIndicatorController.submitIndicator(.init(id: reachabilityNotificationID,
-                                                                                 title: L10n.commonOffline,
-                                                                                 persistent: true))
-                case (.reachable, .unreachable):
-                    flowParameters.userIndicatorController.submitIndicator(.init(id: reachabilityNotificationID,
-                                                                                 title: L10n.commonServerUnreachable,
-                                                                                 persistent: true))
-                // Don't alarm the user while we've intentionally suspended the client.
-                case (.reachable, .reachable), (.reachable, .suspended):
-                    flowParameters.userIndicatorController.retractIndicatorWithId(reachabilityNotificationID)
-                }
-            }
-            .store(in: &cancellables)
-        
+        setupReachabilityObserver()
+
         onboardingFlowCoordinator.actions
             .sink { [weak self] action in
                 guard let self else { return }
@@ -451,8 +428,7 @@ class UserSessionFlowCoordinator: FlowCoordinatorProtocol {
                                                                              userSession: flowParameters.userSession,
                                                                              mediaUploadingPreprocessor: MediaUploadingPreprocessor(appSettings: flowParameters.appSettings),
                                                                              navigationStackCoordinator: profileStackCoordinator,
-                                                                             userIndicatorController: flowParameters.userIndicatorController,
-                                                                             appSettings: flowParameters.appSettings))
+                                                                             userIndicatorController: flowParameters.userIndicatorController))
         coordinator.actions
             .sink { [weak self] action in
                 switch action {
@@ -602,6 +578,32 @@ class UserSessionFlowCoordinator: FlowCoordinatorProtocol {
     
     // MARK: - Native calls
     
+    private func setupReachabilityObserver() {
+        let reachabilityNotificationID = "io.element.elementx.reachability.notification"
+        userSession.clientProxy.homeserverReachabilityPublisher.removeDuplicates()
+            .combineLatest(flowParameters.appMediator.networkMonitor.reachabilityPublisher.removeDuplicates())
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] homeserverReachability, networkReachability in
+                MXLog.info("Homeserver reachability: \(homeserverReachability)")
+
+                guard let self else { return }
+                switch (networkReachability, homeserverReachability) {
+                case (.unreachable, _):
+                    flowParameters.userIndicatorController.submitIndicator(.init(id: reachabilityNotificationID,
+                                                                                 title: L10n.commonOffline,
+                                                                                 persistent: true))
+                case (.reachable, .unreachable):
+                    flowParameters.userIndicatorController.submitIndicator(.init(id: reachabilityNotificationID,
+                                                                                 title: L10n.commonServerUnreachable,
+                                                                                 persistent: true))
+                // Don't alarm the user while we've intentionally suspended the client.
+                case (.reachable, .reachable), (.reachable, .suspended):
+                    flowParameters.userIndicatorController.retractIndicatorWithId(reachabilityNotificationID)
+                }
+            }
+            .store(in: &cancellables)
+    }
+
     private func setupCallObservers() {
         flowParameters.elementCallService.actions
             .receive(on: DispatchQueue.main)

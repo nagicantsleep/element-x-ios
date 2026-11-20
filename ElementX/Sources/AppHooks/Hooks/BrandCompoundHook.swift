@@ -5,7 +5,7 @@
 // Please see LICENSE files in the repository root for full details.
 //
 
-import Compound
+@preconcurrency import Compound
 
 /// Applies the persisted `BrandTheme` to the Compound colour tokens at runtime.
 ///

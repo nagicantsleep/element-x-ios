@@ -48,7 +48,7 @@ nonisolated enum BrandTheme: String, CaseIterable, Codable {
     }
     
     /// The Compound colour-token overrides to apply to `CompoundUIColors` for this brand.
-    var uiColorOverrides: [(KeyPath<CompoundUIColorTokens, UIColor>, UIColor)] {
+    var uiColorOverrides: [(KeyPath<CompoundUIColorTokens, UIColor> & Sendable, UIColor)] {
         switch self {
         case .defaultTheme:
             return []
@@ -89,7 +89,7 @@ nonisolated enum BrandTheme: String, CaseIterable, Codable {
     }
     
     /// Every UI colour key path that any brand may override.
-    static var allUIColorKeyPaths: [KeyPath<CompoundUIColorTokens, UIColor>] {
+    static var allUIColorKeyPaths: [KeyPath<CompoundUIColorTokens, UIColor> & Sendable] {
         var keyPaths = zUIColorOverrides.map(\.0)
         for keyPath in lUIColorOverrides.map(\.0) where !keyPaths.contains(keyPath) {
             keyPaths.append(keyPath)
@@ -151,7 +151,7 @@ nonisolated extension BrandTheme {
         ]
     }
     
-    static var zUIColorOverrides: [(KeyPath<CompoundUIColorTokens, UIColor>, UIColor)] {
+    static var zUIColorOverrides: [(KeyPath<CompoundUIColorTokens, UIColor> & Sendable, UIColor)] {
         [
             (\CompoundUIColorTokens.bgAccentRest, uiColor("#0068FF", "#0068FF")),
             (\CompoundUIColorTokens.bgActionPrimaryRest, uiColor("#0068FF", "#0068FF")),
@@ -176,7 +176,7 @@ nonisolated extension BrandTheme {
         ]
     }
     
-    static var lUIColorOverrides: [(KeyPath<CompoundUIColorTokens, UIColor>, UIColor)] {
+    static var lUIColorOverrides: [(KeyPath<CompoundUIColorTokens, UIColor> & Sendable, UIColor)] {
         [
             (\CompoundUIColorTokens.bgAccentRest, uiColor("#06C755", "#06C755")),
             (\CompoundUIColorTokens.bgActionPrimaryRest, uiColor("#06C755", "#06C755")),
