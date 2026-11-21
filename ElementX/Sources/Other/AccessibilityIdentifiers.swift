@@ -39,6 +39,7 @@ enum A11yIdentifiers {
     static let roomMemberDetailsScreen = RoomMemberDetailsScreen()
     static let userProfileScreen = UserProfileScreen()
     static let friendsScreen = FriendsScreen()
+    static let scheduledMessagesScreen = ScheduledMessagesScreen()
     static let createRoomScreen = CreateRoomScreen()
     static let inviteUsersScreen = InviteUsersScreen()
     static let notificationSettingsScreen = NotificationSettingsScreen()
@@ -186,6 +187,7 @@ enum A11yIdentifiers {
             let link = "composer_toolbar-link"
             let openComposeOptions = "composer_toolbar-open_compose_options"
             let closeFormattingOptions = "composer_toolbar-close-formatting-options"
+            let sendLater = "composer_toolbar-send_later"
         }
         
         let timelineItemActionMenuAction = TimelineItemActionMenuAction()
@@ -222,6 +224,12 @@ enum A11yIdentifiers {
         let accept = "friends-accept"
         let reject = "friends-reject"
         let cancel = "friends-cancel"
+    }
+    
+    struct ScheduledMessagesScreen {
+        let record = "scheduled_messages-record"
+        let sendNow = "scheduled_messages-send_now"
+        let cancel = "scheduled_messages-cancel"
     }
     
     struct RoomNotificationSettingsScreen {

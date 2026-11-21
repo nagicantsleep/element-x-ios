@@ -48,6 +48,7 @@ enum RoomScreenCoordinatorAction {
     case presentPinnedEventsTimeline
     case presentResolveSendFailure(failure: TimelineItemSendFailure.VerifiedUser, sendHandle: SendHandleProxy)
     case presentKnockRequestsList
+    case presentScheduledMessages
     case presentThreadList
     case presentThread(threadRootEventID: String, focussedEventID: String?)
     case presentRoom(roomID: String, via: [String])
@@ -108,7 +109,8 @@ final class RoomScreenCoordinator: CoordinatorProtocol {
                                                          mentionDisplayHelper: ComposerMentionDisplayHelper(timelineContext: timelineViewModel.context),
                                                          appSettings: parameters.appSettings,
                                                          analyticsService: parameters.analytics,
-                                                         composerDraftService: parameters.composerDraftService)
+                                                         composerDraftService: parameters.composerDraftService,
+                                                         schedulingService: SchedulingService(clientProxy: parameters.userSession.clientProxy))
         self.composerViewModel = composerViewModel
     }
     
@@ -177,7 +179,12 @@ final class RoomScreenCoordinator: CoordinatorProtocol {
             .sink { [weak self] action in
                 guard let self else { return }
                 
-                timelineViewModel.process(composerAction: action)
+                switch action {
+                case .openScheduledMessages:
+                    actionsSubject.send(.presentScheduledMessages)
+                default:
+                    timelineViewModel.process(composerAction: action)
+                }
             }
             .store(in: &cancellables)
         

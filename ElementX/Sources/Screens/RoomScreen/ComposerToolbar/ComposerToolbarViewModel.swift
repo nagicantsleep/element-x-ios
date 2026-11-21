@@ -22,6 +22,7 @@ final class ComposerToolbarViewModel: ComposerToolbarViewModelType, ComposerTool
     private let roomProxy: JoinedRoomProxyProtocol
     private let analyticsService: AnalyticsServiceProtocol
     private let draftService: ComposerDraftServiceProtocol
+    private var schedulingService: (any SchedulingServiceProtocol)?
     private var identityPinningViolations = [String: RoomMemberProxyProtocol]()
     
     private let mentionBuilder: MentionBuilderProtocol
@@ -67,13 +68,15 @@ final class ComposerToolbarViewModel: ComposerToolbarViewModelType, ComposerTool
          mentionDisplayHelper: MentionDisplayHelper,
          appSettings: AppSettings,
          analyticsService: AnalyticsServiceProtocol,
-         composerDraftService: ComposerDraftServiceProtocol) {
+         composerDraftService: ComposerDraftServiceProtocol,
+         schedulingService: (any SchedulingServiceProtocol)? = nil) {
         self.initialText = initialText
         self.wysiwygViewModel = wysiwygViewModel
         self.completionSuggestionService = completionSuggestionService
         self.analyticsService = analyticsService
         self.roomProxy = roomProxy
         draftService = composerDraftService
+        self.schedulingService = schedulingService
         
         mentionBuilder = MentionBuilder()
         attributedStringBuilder = AttributedStringBuilder(cacheKey: "Composer", mentionBuilder: mentionBuilder)
@@ -177,6 +180,14 @@ final class ComposerToolbarViewModel: ComposerToolbarViewModelType, ComposerTool
             self?.saveDraft()
         }
         .store(in: &cancellables)
+        
+        if let schedulingService {
+            Task { [weak self] in
+                guard let self else { return }
+                // The flag is only shown once the session's homeserver reports MSC4140 support.
+                state.isSchedulingSupported = await schedulingService.isSupported()
+            }
+        }
     }
     
     // MARK: - Public
@@ -224,6 +235,10 @@ final class ComposerToolbarViewModel: ComposerToolbarViewModelType, ComposerTool
             }
         case .editLastMessage:
             actionsSubject.send(.editLastMessage)
+        case .scheduleSend(let sendAt):
+            Task { await scheduleSend(sendAt: sendAt) }
+        case .openScheduledMessages:
+            actionsSubject.send(.openScheduledMessages)
         case .cancelReply:
             set(mode: .default)
         case .cancelEdit:
@@ -471,6 +486,47 @@ final class ComposerToolbarViewModel: ComposerToolbarViewModelType, ComposerTool
                                          mode: state.composerMode,
                                          intentionalMentions: .init(userIDs: plainComposerContent.mentionedUserIDs, atRoom: plainComposerContent.containsAtRoomMention)))
     }
+    
+    /// Sends the current composer content as an MSC4140 delayed event and clears the composer.
+    private func scheduleSend(sendAt: Date) async {
+        guard sendAt > .now else { return }
+        
+        switch state.composerMode {
+        case .default:
+            break
+        default:
+            MXLog.warning("Ignoring the send later action in an unsupported composer mode: \(state.composerMode)")
+            return
+        }
+        
+        guard let schedulingService else { return }
+        
+        let composerContent = currentContent
+        switch await schedulingService.schedule(roomID: roomProxy.id,
+                                                eventType: Self.messageEventType,
+                                                content: Self.scheduledEventContent(plain: composerContent.plain,
+                                                                                    html: composerContent.html),
+                                                sendAt: sendAt) {
+        case .success:
+            // There is no timeline callback for scheduled messages; clear the composer directly.
+            set(mode: .default)
+            set(text: "")
+        case .failure:
+            state.bindings.alertInfo = .init(id: UUID(), title: UntranslatedL10n.composerScheduledFailed)
+        }
+    }
+    
+    /// The `m.room.message` content for a scheduled send, mirroring the plain send path's shape.
+    private static func scheduledEventContent(plain: String, html: String?) -> [String: String] {
+        var content = ["msgtype": "m.text", "body": plain]
+        if let html, !html.isEmpty {
+            content["formatted_body"] = html
+            content["format"] = "org.matrix.custom.html"
+        }
+        return content
+    }
+    
+    private static let messageEventType = "m.room.message"
     
     private func cancelEdit() {
         if let draft = draftService.loadVolatileDraft() {
@@ -832,7 +888,8 @@ extension ComposerToolbarViewModel {
                      message: String = "",
                      mockMode: MockMode? = nil,
                      hasSuggestions: Bool = false,
-                     canSend: Bool = true) -> ComposerToolbarViewModel {
+                     canSend: Bool = true,
+                     schedulingService: (any SchedulingServiceProtocol)? = nil) -> ComposerToolbarViewModel {
         let suggestions: [SuggestionItem] = if hasSuggestions {
             [.init(suggestionType: .user(.init(id: "@user_mention_1:matrix.org", displayName: "User 1", avatarURL: nil)), range: .init(), rawSuggestionText: ""),
              .init(suggestionType: .user(.init(id: "@user_mention_2:matrix.org", displayName: "User 2", avatarURL: .mockMXCUserAvatar)), range: .init(), rawSuggestionText: "")]
@@ -854,7 +911,8 @@ extension ComposerToolbarViewModel {
                                                  mentionDisplayHelper: ComposerMentionDisplayHelper.mock,
                                                  appSettings: .volatile(),
                                                  analyticsService: AnalyticsServiceMock(.init()),
-                                                 composerDraftService: ComposerDraftServiceMock(.init()))
+                                                 composerDraftService: ComposerDraftServiceMock(.init()),
+                                                 schedulingService: schedulingService)
         viewModel.state.bindings.composerFocused = focused
         viewModel.state.bindings.plainComposerText = NSAttributedString(string: message)
         

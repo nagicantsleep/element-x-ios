@@ -25,6 +25,7 @@ enum ComposerToolbarVoiceMessageAction {
 
 enum ComposerToolbarViewModelAction {
     case sendMessage(plain: String, html: String?, mode: ComposerMode, intentionalMentions: IntentionalMentions)
+    case openScheduledMessages
     case editLastMessage
     case attach(ComposerAttachmentType)
     
@@ -43,6 +44,8 @@ enum ComposerToolbarViewAction {
     case composerDisappeared
     
     case sendMessage
+    case scheduleSend(sendAt: Date)
+    case openScheduledMessages
     case editLastMessage
     case cancelReply
     case cancelEdit
@@ -78,6 +81,9 @@ struct ComposerToolbarViewState: BindableState {
     
     var isRoomEncrypted: Bool
     var isLocationSharingEnabled: Bool
+    
+    /// Whether the homeserver supports MSC4140 delayed events ("Send later").
+    var isSchedulingSupported = false
     
     var keyCommands: [WysiwygKeyCommand] = []
     
@@ -151,6 +157,54 @@ struct ComposerToolbarViewStateBindings {
     var selectedRange = NSRange(location: 0, length: 0)
     
     var presendCallback: (() -> Void)?
+    
+    var isScheduleDatePickerDisplayed = false
+    var scheduledSendDate = Date()
+}
+
+/// The "Send later" delivery presets, mirroring web's `SEND_LATER_OPTIONS` / `sendAtFor`.
+enum SendLaterOption: CaseIterable, Identifiable {
+    case in5Minutes
+    case in30Minutes
+    case in1Hour
+    case tomorrowMorning
+    case custom
+    
+    var id: Self {
+        self
+    }
+    
+    var title: String {
+        switch self {
+        case .in5Minutes:
+            UntranslatedL10n.composerSendLaterIn5Minutes
+        case .in30Minutes:
+            UntranslatedL10n.composerSendLaterIn30Minutes
+        case .in1Hour:
+            UntranslatedL10n.composerSendLaterIn1Hour
+        case .tomorrowMorning:
+            UntranslatedL10n.composerSendLaterTomorrowMorning
+        case .custom:
+            UntranslatedL10n.composerSendLaterCustom
+        }
+    }
+    
+    /// The delivery time for the preset; `custom` returns `nil` (the date picker handles it).
+    func sendAt(now: Date = .now, calendar: Calendar = .current) -> Date? {
+        switch self {
+        case .in5Minutes:
+            now.addingTimeInterval(5 * 60)
+        case .in30Minutes:
+            now.addingTimeInterval(30 * 60)
+        case .in1Hour:
+            now.addingTimeInterval(60 * 60)
+        case .tomorrowMorning:
+            calendar.startOfDay(for: calendar.date(byAdding: .day, value: 1, to: now) ?? now)
+                .addingTimeInterval(9 * 3600)
+        case .custom:
+            nil
+        }
+    }
 }
 
 /// An item in the toolbar

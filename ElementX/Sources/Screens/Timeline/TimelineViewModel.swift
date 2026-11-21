@@ -264,6 +264,9 @@ class TimelineViewModel: TimelineViewModelType, TimelineViewModelProtocol {
             }
         case .editLastMessage:
             editLastMessage()
+        case .openScheduledMessages:
+            // Presented by RoomScreenCoordinator, not the timeline.
+            break
         case .attach(let attachment):
             attach(attachment)
         case .handlePasteOrDrop(let providers):

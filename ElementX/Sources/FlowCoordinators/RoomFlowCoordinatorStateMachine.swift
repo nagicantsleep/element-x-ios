@@ -48,6 +48,7 @@ extension RoomFlowCoordinator {
         case joinRoomScreen
         case room
         case threadList
+        case scheduledMessages
         case thread(threadRootEventID: String, previousState: State)
         case roomDetails(isRoot: Bool)
         case roomDetailsEditScreen
@@ -106,6 +107,9 @@ extension RoomFlowCoordinator {
         
         case presentThreadList
         case dismissThreadList
+        
+        case presentScheduledMessages
+        case dismissScheduledMessages
         
         case startSpaceFlow
         case finishedSpaceFlow
@@ -236,6 +240,12 @@ extension RoomFlowCoordinator {
                 return .room
             case (.threadList, .presentThread(let threadRootEventID, _)):
                 return .thread(threadRootEventID: threadRootEventID, previousState: fromState)
+                
+            // Scheduled messages
+            case (.room, .presentScheduledMessages):
+                return .scheduledMessages
+            case (.scheduledMessages, .dismissScheduledMessages):
+                return .room
                 
             // Thread
             case (.room, .presentThread(let threadRootEventID, _)):

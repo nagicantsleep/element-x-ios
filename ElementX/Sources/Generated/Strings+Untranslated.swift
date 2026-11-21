@@ -40,6 +40,16 @@ internal nonisolated enum UntranslatedL10n {
   internal static var screenFriendsTitle: String { return UntranslatedL10n.tr("Untranslated", "screen_friends_title") }
   /// Search
   internal static var screenHomeTabSearch: String { return UntranslatedL10n.tr("Untranslated", "screen_home_tab_search") }
+  /// Cancel
+  internal static var screenScheduledMessagesCancel: String { return UntranslatedL10n.tr("Untranslated", "screen_scheduled_messages_cancel") }
+  /// No scheduled messages
+  internal static var screenScheduledMessagesEmptyState: String { return UntranslatedL10n.tr("Untranslated", "screen_scheduled_messages_empty_state") }
+  /// Failed to update the scheduled message.
+  internal static var screenScheduledMessagesErrorFailed: String { return UntranslatedL10n.tr("Untranslated", "screen_scheduled_messages_error_failed") }
+  /// Send now
+  internal static var screenScheduledMessagesSendNow: String { return UntranslatedL10n.tr("Untranslated", "screen_scheduled_messages_send_now") }
+  /// Scheduled
+  internal static var screenScheduledMessagesTitle: String { return UntranslatedL10n.tr("Untranslated", "screen_scheduled_messages_title") }
   /// Search for chats and messages
   internal static var screenSearchEmptyStateMessage: String { return UntranslatedL10n.tr("Untranslated", "screen_search_empty_state_message") }
   /// Start searching...

@@ -406,6 +406,11 @@ class RoomFlowCoordinator: FlowCoordinatorProtocol {
             case (.room, .presentThreadList, .threadList):
                 Task { await self.presentThreadList(animated: animated) }
                 
+            // Scheduled messages
+                
+            case (.room, .presentScheduledMessages, .scheduledMessages):
+                Task { await self.presentScheduledMessages(animated: animated) }
+                
             // Thread
                 
             case (_, .presentThread(let threadRootEventID, let focusEventID), .thread):
@@ -734,6 +739,8 @@ class RoomFlowCoordinator: FlowCoordinatorProtocol {
                                                                      sendHandle: sendHandle))
                 case .presentKnockRequestsList:
                     stateMachine.tryEvent(.presentKnockRequestsListScreen)
+                case .presentScheduledMessages:
+                    stateMachine.tryEvent(.presentScheduledMessages, userInfo: EventUserInfo(animated: animated))
                 case .presentThreadList:
                     stateMachine.tryEvent(.presentThreadList, userInfo: EventUserInfo(animated: animated))
                 case .presentThread(let threadRootEventID, let focussedEventID):
@@ -764,6 +771,17 @@ class RoomFlowCoordinator: FlowCoordinatorProtocol {
         navigationStackCoordinator.push(coordinator, animated: animated) { [weak self] in
             guard let self else { return }
             stateMachine.tryEvent(.dismissThreadList)
+        }
+    }
+    
+    /// Z/L: pushes the room's "Scheduled" messages panel (MSC4140 delayed sends).
+    private func presentScheduledMessages(animated: Bool) async {
+        let coordinator = ScheduledMessagesScreenCoordinator(parameters: .init(schedulingService: SchedulingService(clientProxy: userSession.clientProxy),
+                                                                               roomID: roomProxy.id))
+        
+        navigationStackCoordinator.push(coordinator, animated: animated) { [weak self] in
+            guard let self else { return }
+            stateMachine.tryEvent(.dismissScheduledMessages)
         }
     }
     

@@ -83,6 +83,26 @@ struct ComposerToolbar: View {
         }
         .disabled(!context.viewState.canSend)
         .alert(item: $context.alertInfo)
+        .sheet(isPresented: $context.isScheduleDatePickerDisplayed) {
+            ElementNavigationStack {
+                DatePicker(UntranslatedL10n.composerSendLaterCustomTitle,
+                           selection: $context.scheduledSendDate,
+                           in: Date.now...)
+                    .datePickerStyle(.graphical)
+                    .padding()
+                    .navigationTitle(UntranslatedL10n.composerSendLaterCustomTitle)
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            Button(L10n.actionOk) {
+                                context.isScheduleDatePickerDisplayed = false
+                                context.send(viewAction: .scheduleSend(sendAt: context.scheduledSendDate))
+                            }
+                        }
+                    }
+            }
+            .presentationDetents([.medium])
+        }
     }
     
     private var suggestionView: some View {
@@ -103,6 +123,8 @@ struct ComposerToolbar: View {
                         .scaledFrame(size: Compound.supportsGlass ? 44 : 36, relativeTo: .compound.headingLG)
                         .scaledPadding(.vertical, trailingButtonVerticalPadding, relativeTo: .compound.headingLG)
                 } else if context.viewState.showSendButton {
+                    sendLaterButton
+                    
                     sendButton
                         .scaledPadding(.vertical, trailingButtonVerticalPadding, relativeTo: .compound.headingLG)
                 } else {
@@ -122,6 +144,8 @@ struct ComposerToolbar: View {
                 context.send(viewAction: .composerAction(action: action.composerAction))
             }
             .padding(.horizontal, 5)
+            
+            sendLaterButton
             
             sendButton
         }
@@ -170,6 +194,51 @@ struct ComposerToolbar: View {
             .animation(.linear(duration: 0.1).disabledDuringTests(), value: context.viewState.sendButtonDisabled)
             .keyboardShortcut(.return, modifiers: [.command])
             .accessibilityIdentifier(A11yIdentifiers.roomScreen.sendButton)
+    }
+    
+    /// The "Send later" affordance (MSC4140), mirroring web's ScheduleButton semantics:
+    /// a clock button opening a menu of delivery presets plus a custom date picker.
+    @ViewBuilder
+    private var sendLaterButton: some View {
+        if context.viewState.isSchedulingSupported, !context.viewState.isVoiceMessageModeActivated {
+            Menu {
+                Section {
+                    ForEach(SendLaterOption.allCases.filter { $0 != .custom }) { option in
+                        if let sendAt = option.sendAt() {
+                            Button {
+                                context.send(viewAction: .scheduleSend(sendAt: sendAt))
+                            } label: {
+                                Label(option.title, systemImage: "clock")
+                            }
+                        }
+                    }
+                }
+                
+                Section {
+                    Button {
+                        context.scheduledSendDate = .now.addingTimeInterval(60 * 60)
+                        context.isScheduleDatePickerDisplayed = true
+                    } label: {
+                        Label(UntranslatedL10n.composerSendLaterCustom, systemImage: "calendar.badge.clock")
+                    }
+                }
+                
+                Section {
+                    Button {
+                        context.send(viewAction: .openScheduledMessages)
+                    } label: {
+                        Label(UntranslatedL10n.composerScheduledMenuTitle, systemImage: "clock.arrow.circlepath")
+                    }
+                }
+            } label: {
+                CompoundIcon(\.time,
+                             size: Compound.supportsGlass ? .medium : .small,
+                             relativeTo: .compound.headingLG)
+            }
+            .buttonStyle(ComposerToolbarButtonStyle())
+            .accessibilityLabel(UntranslatedL10n.composerSendLater)
+            .accessibilityIdentifier(A11yIdentifiers.roomScreen.composerToolbar.sendLater)
+        }
     }
     
     private var messageComposer: some View {

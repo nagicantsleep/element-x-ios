@@ -315,8 +315,10 @@ final class FriendsService: FriendsServiceProtocol {
     
     private func request(method: String, path: String, body: [String: String]?) async -> Result<[String: Any], FriendsError> {
         guard let token = await clientProxy.accessToken() else { return .failure(.unauthorized) }
-        guard let url = URL(string: clientProxy.homeserver + path) else { return .failure(.network) }
-        
+        let joined = clientProxy.homeserver.hasSuffix("/") && path.hasPrefix("/")
+            ? String(clientProxy.homeserver.dropLast()) + path
+            : clientProxy.homeserver + path
+        guard let url = URL(string: joined) else { return .failure(.network) }
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = method
         urlRequest.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
