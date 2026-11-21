@@ -11158,6 +11158,233 @@ nonisolated class RoomThreadListServiceProxyMock: RoomThreadListServiceProxyProt
         }
     }
 }
+nonisolated class SchedulingServiceMock: SchedulingServiceProtocol, @unchecked Sendable {
+
+    //MARK: - isSupported
+
+    private let isSupportedCallsCountLock = NSLock()
+    private nonisolated(unsafe) var isSupportedUnderlyingCallsCount = 0
+    var isSupportedCallsCount: Int {
+        get { isSupportedCallsCountLock.withLock { isSupportedUnderlyingCallsCount } }
+        set { isSupportedCallsCountLock.withLock { isSupportedUnderlyingCallsCount = newValue } }
+    }
+    var isSupportedCalled: Bool {
+        return isSupportedCallsCount > 0
+    }
+
+    private let isSupportedReturnValueLock = NSLock()
+    private nonisolated(unsafe) var isSupportedUnderlyingReturnValue: Bool!
+    var isSupportedReturnValue: Bool! {
+        get { isSupportedReturnValueLock.withLock { isSupportedUnderlyingReturnValue } }
+        set { isSupportedReturnValueLock.withLock { isSupportedUnderlyingReturnValue = newValue } }
+    }
+    nonisolated(unsafe) var isSupportedClosure: (() async -> Bool)?
+
+    @concurrent func isSupported() async -> Bool {
+        isSupportedCallsCountLock.withLock { isSupportedUnderlyingCallsCount += 1 }
+        if let isSupportedClosure = isSupportedClosure {
+            return await isSupportedClosure()
+        } else {
+            return isSupportedReturnValue
+        }
+    }
+    //MARK: - schedule
+
+    private let scheduleRoomIDEventTypeContentSendAtCallsCountLock = NSLock()
+    private nonisolated(unsafe) var scheduleRoomIDEventTypeContentSendAtUnderlyingCallsCount = 0
+    var scheduleRoomIDEventTypeContentSendAtCallsCount: Int {
+        get { scheduleRoomIDEventTypeContentSendAtCallsCountLock.withLock { scheduleRoomIDEventTypeContentSendAtUnderlyingCallsCount } }
+        set { scheduleRoomIDEventTypeContentSendAtCallsCountLock.withLock { scheduleRoomIDEventTypeContentSendAtUnderlyingCallsCount = newValue } }
+    }
+    var scheduleRoomIDEventTypeContentSendAtCalled: Bool {
+        return scheduleRoomIDEventTypeContentSendAtCallsCount > 0
+    }
+    private let scheduleRoomIDEventTypeContentSendAtReceivedArgumentsLock = NSLock()
+    private nonisolated(unsafe) var scheduleRoomIDEventTypeContentSendAtUnderlyingReceivedArguments: (roomID: String, eventType: String, content: [String: String], sendAt: Date)?
+    var scheduleRoomIDEventTypeContentSendAtReceivedArguments: (roomID: String, eventType: String, content: [String: String], sendAt: Date)? {
+        get { scheduleRoomIDEventTypeContentSendAtReceivedArgumentsLock.withLock { scheduleRoomIDEventTypeContentSendAtUnderlyingReceivedArguments } }
+        set { scheduleRoomIDEventTypeContentSendAtReceivedArgumentsLock.withLock { scheduleRoomIDEventTypeContentSendAtUnderlyingReceivedArguments = newValue } }
+    }
+    private let scheduleRoomIDEventTypeContentSendAtReceivedInvocationsLock = NSLock()
+    private nonisolated(unsafe) var scheduleRoomIDEventTypeContentSendAtUnderlyingReceivedInvocations: [(roomID: String, eventType: String, content: [String: String], sendAt: Date)] = []
+    var scheduleRoomIDEventTypeContentSendAtReceivedInvocations: [(roomID: String, eventType: String, content: [String: String], sendAt: Date)] {
+        get { scheduleRoomIDEventTypeContentSendAtReceivedInvocationsLock.withLock { scheduleRoomIDEventTypeContentSendAtUnderlyingReceivedInvocations } }
+        set { scheduleRoomIDEventTypeContentSendAtReceivedInvocationsLock.withLock { scheduleRoomIDEventTypeContentSendAtUnderlyingReceivedInvocations = newValue } }
+    }
+
+    private let scheduleRoomIDEventTypeContentSendAtReturnValueLock = NSLock()
+    private nonisolated(unsafe) var scheduleRoomIDEventTypeContentSendAtUnderlyingReturnValue: Result<ScheduledMessageRecord, SchedulingError>!
+    var scheduleRoomIDEventTypeContentSendAtReturnValue: Result<ScheduledMessageRecord, SchedulingError>! {
+        get { scheduleRoomIDEventTypeContentSendAtReturnValueLock.withLock { scheduleRoomIDEventTypeContentSendAtUnderlyingReturnValue } }
+        set { scheduleRoomIDEventTypeContentSendAtReturnValueLock.withLock { scheduleRoomIDEventTypeContentSendAtUnderlyingReturnValue = newValue } }
+    }
+    nonisolated(unsafe) var scheduleRoomIDEventTypeContentSendAtClosure: ((String, String, [String: String], Date) async -> Result<ScheduledMessageRecord, SchedulingError>)?
+
+    @concurrent func schedule(roomID: String, eventType: String, content: [String: String], sendAt: Date) async -> Result<ScheduledMessageRecord, SchedulingError> {
+        scheduleRoomIDEventTypeContentSendAtCallsCountLock.withLock { scheduleRoomIDEventTypeContentSendAtUnderlyingCallsCount += 1 }
+        scheduleRoomIDEventTypeContentSendAtReceivedArguments = (roomID: roomID, eventType: eventType, content: content, sendAt: sendAt)
+        scheduleRoomIDEventTypeContentSendAtReceivedInvocationsLock.withLock { scheduleRoomIDEventTypeContentSendAtUnderlyingReceivedInvocations.append((roomID: roomID, eventType: eventType, content: content, sendAt: sendAt)) }
+        if let scheduleRoomIDEventTypeContentSendAtClosure = scheduleRoomIDEventTypeContentSendAtClosure {
+            return await scheduleRoomIDEventTypeContentSendAtClosure(roomID, eventType, content, sendAt)
+        } else {
+            return scheduleRoomIDEventTypeContentSendAtReturnValue
+        }
+    }
+    //MARK: - sendNow
+
+    private let sendNowDelayIdCallsCountLock = NSLock()
+    private nonisolated(unsafe) var sendNowDelayIdUnderlyingCallsCount = 0
+    var sendNowDelayIdCallsCount: Int {
+        get { sendNowDelayIdCallsCountLock.withLock { sendNowDelayIdUnderlyingCallsCount } }
+        set { sendNowDelayIdCallsCountLock.withLock { sendNowDelayIdUnderlyingCallsCount = newValue } }
+    }
+    var sendNowDelayIdCalled: Bool {
+        return sendNowDelayIdCallsCount > 0
+    }
+    private let sendNowDelayIdReceivedDelayIdLock = NSLock()
+    private nonisolated(unsafe) var sendNowDelayIdUnderlyingReceivedDelayId: String?
+    var sendNowDelayIdReceivedDelayId: String? {
+        get { sendNowDelayIdReceivedDelayIdLock.withLock { sendNowDelayIdUnderlyingReceivedDelayId } }
+        set { sendNowDelayIdReceivedDelayIdLock.withLock { sendNowDelayIdUnderlyingReceivedDelayId = newValue } }
+    }
+    private let sendNowDelayIdReceivedInvocationsLock = NSLock()
+    private nonisolated(unsafe) var sendNowDelayIdUnderlyingReceivedInvocations: [String] = []
+    var sendNowDelayIdReceivedInvocations: [String] {
+        get { sendNowDelayIdReceivedInvocationsLock.withLock { sendNowDelayIdUnderlyingReceivedInvocations } }
+        set { sendNowDelayIdReceivedInvocationsLock.withLock { sendNowDelayIdUnderlyingReceivedInvocations = newValue } }
+    }
+
+    private let sendNowDelayIdReturnValueLock = NSLock()
+    private nonisolated(unsafe) var sendNowDelayIdUnderlyingReturnValue: Result<Void, SchedulingError>!
+    var sendNowDelayIdReturnValue: Result<Void, SchedulingError>! {
+        get { sendNowDelayIdReturnValueLock.withLock { sendNowDelayIdUnderlyingReturnValue } }
+        set { sendNowDelayIdReturnValueLock.withLock { sendNowDelayIdUnderlyingReturnValue = newValue } }
+    }
+    nonisolated(unsafe) var sendNowDelayIdClosure: ((String) async -> Result<Void, SchedulingError>)?
+
+    @concurrent func sendNow(delayId: String) async -> Result<Void, SchedulingError> {
+        sendNowDelayIdCallsCountLock.withLock { sendNowDelayIdUnderlyingCallsCount += 1 }
+        sendNowDelayIdReceivedDelayId = delayId
+        sendNowDelayIdReceivedInvocationsLock.withLock { sendNowDelayIdUnderlyingReceivedInvocations.append(delayId) }
+        if let sendNowDelayIdClosure = sendNowDelayIdClosure {
+            return await sendNowDelayIdClosure(delayId)
+        } else {
+            return sendNowDelayIdReturnValue
+        }
+    }
+    //MARK: - cancel
+
+    private let cancelDelayIdCallsCountLock = NSLock()
+    private nonisolated(unsafe) var cancelDelayIdUnderlyingCallsCount = 0
+    var cancelDelayIdCallsCount: Int {
+        get { cancelDelayIdCallsCountLock.withLock { cancelDelayIdUnderlyingCallsCount } }
+        set { cancelDelayIdCallsCountLock.withLock { cancelDelayIdUnderlyingCallsCount = newValue } }
+    }
+    var cancelDelayIdCalled: Bool {
+        return cancelDelayIdCallsCount > 0
+    }
+    private let cancelDelayIdReceivedDelayIdLock = NSLock()
+    private nonisolated(unsafe) var cancelDelayIdUnderlyingReceivedDelayId: String?
+    var cancelDelayIdReceivedDelayId: String? {
+        get { cancelDelayIdReceivedDelayIdLock.withLock { cancelDelayIdUnderlyingReceivedDelayId } }
+        set { cancelDelayIdReceivedDelayIdLock.withLock { cancelDelayIdUnderlyingReceivedDelayId = newValue } }
+    }
+    private let cancelDelayIdReceivedInvocationsLock = NSLock()
+    private nonisolated(unsafe) var cancelDelayIdUnderlyingReceivedInvocations: [String] = []
+    var cancelDelayIdReceivedInvocations: [String] {
+        get { cancelDelayIdReceivedInvocationsLock.withLock { cancelDelayIdUnderlyingReceivedInvocations } }
+        set { cancelDelayIdReceivedInvocationsLock.withLock { cancelDelayIdUnderlyingReceivedInvocations = newValue } }
+    }
+
+    private let cancelDelayIdReturnValueLock = NSLock()
+    private nonisolated(unsafe) var cancelDelayIdUnderlyingReturnValue: Result<Void, SchedulingError>!
+    var cancelDelayIdReturnValue: Result<Void, SchedulingError>! {
+        get { cancelDelayIdReturnValueLock.withLock { cancelDelayIdUnderlyingReturnValue } }
+        set { cancelDelayIdReturnValueLock.withLock { cancelDelayIdUnderlyingReturnValue = newValue } }
+    }
+    nonisolated(unsafe) var cancelDelayIdClosure: ((String) async -> Result<Void, SchedulingError>)?
+
+    @concurrent func cancel(delayId: String) async -> Result<Void, SchedulingError> {
+        cancelDelayIdCallsCountLock.withLock { cancelDelayIdUnderlyingCallsCount += 1 }
+        cancelDelayIdReceivedDelayId = delayId
+        cancelDelayIdReceivedInvocationsLock.withLock { cancelDelayIdUnderlyingReceivedInvocations.append(delayId) }
+        if let cancelDelayIdClosure = cancelDelayIdClosure {
+            return await cancelDelayIdClosure(delayId)
+        } else {
+            return cancelDelayIdReturnValue
+        }
+    }
+    //MARK: - delayedEvents
+
+    private let delayedEventsCallsCountLock = NSLock()
+    private nonisolated(unsafe) var delayedEventsUnderlyingCallsCount = 0
+    var delayedEventsCallsCount: Int {
+        get { delayedEventsCallsCountLock.withLock { delayedEventsUnderlyingCallsCount } }
+        set { delayedEventsCallsCountLock.withLock { delayedEventsUnderlyingCallsCount = newValue } }
+    }
+    var delayedEventsCalled: Bool {
+        return delayedEventsCallsCount > 0
+    }
+
+    private let delayedEventsReturnValueLock = NSLock()
+    private nonisolated(unsafe) var delayedEventsUnderlyingReturnValue: Result<[DelayedEventInfo], SchedulingError>!
+    var delayedEventsReturnValue: Result<[DelayedEventInfo], SchedulingError>! {
+        get { delayedEventsReturnValueLock.withLock { delayedEventsUnderlyingReturnValue } }
+        set { delayedEventsReturnValueLock.withLock { delayedEventsUnderlyingReturnValue = newValue } }
+    }
+    nonisolated(unsafe) var delayedEventsClosure: (() async -> Result<[DelayedEventInfo], SchedulingError>)?
+
+    @concurrent func delayedEvents() async -> Result<[DelayedEventInfo], SchedulingError> {
+        delayedEventsCallsCountLock.withLock { delayedEventsUnderlyingCallsCount += 1 }
+        if let delayedEventsClosure = delayedEventsClosure {
+            return await delayedEventsClosure()
+        } else {
+            return delayedEventsReturnValue
+        }
+    }
+    //MARK: - records
+
+    private let recordsRoomIDCallsCountLock = NSLock()
+    private nonisolated(unsafe) var recordsRoomIDUnderlyingCallsCount = 0
+    var recordsRoomIDCallsCount: Int {
+        get { recordsRoomIDCallsCountLock.withLock { recordsRoomIDUnderlyingCallsCount } }
+        set { recordsRoomIDCallsCountLock.withLock { recordsRoomIDUnderlyingCallsCount = newValue } }
+    }
+    var recordsRoomIDCalled: Bool {
+        return recordsRoomIDCallsCount > 0
+    }
+    private let recordsRoomIDReceivedRoomIDLock = NSLock()
+    private nonisolated(unsafe) var recordsRoomIDUnderlyingReceivedRoomID: String?
+    var recordsRoomIDReceivedRoomID: String? {
+        get { recordsRoomIDReceivedRoomIDLock.withLock { recordsRoomIDUnderlyingReceivedRoomID } }
+        set { recordsRoomIDReceivedRoomIDLock.withLock { recordsRoomIDUnderlyingReceivedRoomID = newValue } }
+    }
+    private let recordsRoomIDReceivedInvocationsLock = NSLock()
+    private nonisolated(unsafe) var recordsRoomIDUnderlyingReceivedInvocations: [String] = []
+    var recordsRoomIDReceivedInvocations: [String] {
+        get { recordsRoomIDReceivedInvocationsLock.withLock { recordsRoomIDUnderlyingReceivedInvocations } }
+        set { recordsRoomIDReceivedInvocationsLock.withLock { recordsRoomIDUnderlyingReceivedInvocations = newValue } }
+    }
+
+    private let recordsRoomIDReturnValueLock = NSLock()
+    private nonisolated(unsafe) var recordsRoomIDUnderlyingReturnValue: [ScheduledMessageRecord]!
+    var recordsRoomIDReturnValue: [ScheduledMessageRecord]! {
+        get { recordsRoomIDReturnValueLock.withLock { recordsRoomIDUnderlyingReturnValue } }
+        set { recordsRoomIDReturnValueLock.withLock { recordsRoomIDUnderlyingReturnValue = newValue } }
+    }
+    nonisolated(unsafe) var recordsRoomIDClosure: ((String) -> [ScheduledMessageRecord])?
+
+    func records(roomID: String) -> [ScheduledMessageRecord] {
+        recordsRoomIDCallsCountLock.withLock { recordsRoomIDUnderlyingCallsCount += 1 }
+        recordsRoomIDReceivedRoomID = roomID
+        recordsRoomIDReceivedInvocationsLock.withLock { recordsRoomIDUnderlyingReceivedInvocations.append(roomID) }
+        if let recordsRoomIDClosure = recordsRoomIDClosure {
+            return recordsRoomIDClosure(roomID)
+        } else {
+            return recordsRoomIDReturnValue
+        }
+    }
+}
 nonisolated class SearchServiceProxyMock: SearchServiceProxyProtocol, @unchecked Sendable {
     var resultsPublisher: CurrentValuePublisher<[SearchServiceResult], Never> {
         get { return underlyingResultsPublisher }
