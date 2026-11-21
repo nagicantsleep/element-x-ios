@@ -75,10 +75,25 @@ import Foundation
 
 nonisolated extension {{enumName}} {
   static func tr(_ table: String, _ key: String, _ args: CVarArg...) -> String {
-    // No need to check languages, we always default to en for untranslated strings
-    guard let bundle = Bundle.lprojBundle(for: "en") else { return key }
-    let format = NSLocalizedString(key, tableName: table, bundle: bundle, comment: "")
-    return String(format: format, locale: Locale(identifier: "en"), arguments: args)
+    // Untranslated tables are only shipped for a subset of languages, so walk the user's
+    // preferred localizations (overridable in tests) and fall back to the English bundle
+    // when none of them provides a translation for the key.
+    let languages = Bundle.overrideLocalizations ?? Bundle.app.preferredLocalizations
+
+    for language in languages {
+      if let translation = trIn(language, table, key, args) {
+        return translation
+      }
+    }
+    return trIn("en", table, key) ?? key
+  }
+
+  private static func trIn(_ language: String, _ table: String, _ key: String, _ args: CVarArg...) -> String? {
+    guard let bundle = Bundle.lprojBundle(for: language) else { return nil }
+    // Passing the key as the default value makes a missing key detectable by comparison.
+    let format = bundle.localizedString(forKey: key, value: key, table: table)
+    guard format != key else { return nil }
+    return String(format: format, locale: Locale(identifier: language), arguments: args)
   }
 }
 

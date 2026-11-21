@@ -81,4 +81,36 @@ final class LocalizationTests {
         #expect(UntranslatedL10n.untranslatedPlural(1) == "One untranslated item")
         #expect(UntranslatedL10n.untranslatedPlural(5) == "5 untranslated items")
     }
+    
+    /// Test the Untranslated table resolves in the device language when translated
+    @Test
+    func untranslatedResolvesInDeviceLanguage() {
+        Bundle.overrideLocalizations = ["vi"]
+        
+        #expect(UntranslatedL10n.screenFriendsTitle == "Bạn bè")
+        
+        Bundle.overrideLocalizations = ["ja"]
+        
+        #expect(UntranslatedL10n.screenFriendsTitle == "フレンド")
+    }
+    
+    /// Test the Untranslated table falls back to English when the language doesn't translate the key
+    @Test
+    func untranslatedFallsBackToEnglishWhenLanguageTableMissing() {
+        // Vietnamese ships a table but only for the fork's own keys
+        Bundle.overrideLocalizations = ["vi"]
+        #expect(UntranslatedL10n.untranslated == "Untranslated")
+        
+        // French ships no Untranslated table at all
+        Bundle.overrideLocalizations = ["fr"]
+        #expect(UntranslatedL10n.screenFriendsTitle == "Friends")
+    }
+    
+    /// Test untranslated strings default to English on an English device
+    @Test
+    func untranslatedDefaultsToEnglish() {
+        Bundle.overrideLocalizations = nil
+        
+        #expect(UntranslatedL10n.screenFriendsTitle == "Friends")
+    }
 }
