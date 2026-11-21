@@ -22,6 +22,7 @@ enum SettingsScreenViewModelAction {
     case notifications
     case advancedSettings
     case labs
+    case language
     case developerOptions
     case logout
     case deactivateAccount
@@ -94,6 +95,7 @@ enum SettingsScreenViewAction {
     case developerOptions
     case advancedSettings
     case labs
+    case language
     case logout
     case deactivateAccount
     

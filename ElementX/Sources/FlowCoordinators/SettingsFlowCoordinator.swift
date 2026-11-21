@@ -115,6 +115,8 @@ class SettingsFlowCoordinator: FlowCoordinatorProtocol {
                     presentAdvancedSettings()
                 case .labs:
                     presentLabs()
+                case .language:
+                    presentLanguagePicker()
                 case .developerOptions:
                     presentDeveloperOptions()
                 case .deactivateAccount:
@@ -138,6 +140,10 @@ class SettingsFlowCoordinator: FlowCoordinatorProtocol {
             .store(in: &cancellables)
         
         navigationStackCoordinator.push(coordinator)
+    }
+    
+    private func presentLanguagePicker() {
+        navigationStackCoordinator.push(LanguagePickerScreenCoordinator())
     }
     
     private func startEncryptionSettingsFlow() {

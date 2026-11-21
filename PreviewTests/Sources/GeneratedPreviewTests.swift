@@ -516,6 +516,13 @@ extension PreviewTests {
     }
 
     @Test
+    func languagePickerScreen() async throws {
+        for (index, preview) in LanguagePickerScreen_Previews._allPreviews.enumerated() {
+            try await assertSnapshots(matching: preview, step: index)
+        }
+    }
+
+    @Test
     func leaveSpaceRoomDetailsCell() async throws {
         for (index, preview) in LeaveSpaceRoomDetailsCell_Previews._allPreviews.enumerated() {
             try await assertSnapshots(matching: preview, step: index)

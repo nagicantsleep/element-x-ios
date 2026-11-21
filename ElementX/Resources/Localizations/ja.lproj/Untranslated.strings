@@ -27,3 +27,9 @@
 "composer_send_later_custom_title" = "後で送信";
 "composer_scheduled_failed" = "メッセージを予約できませんでした。";
 "composer_scheduled_menu_title" = "予定メッセージ";
+"screen_language_picker_title" = "言語";
+"screen_language_picker_system_default" = "システムデフォルト";
+"screen_language_picker_changed_title" = "言語が変更されました";
+"screen_language_picker_changed_message" = "アプリを再起動すると新しい言語が適用されます。";
+"screen_language_picker_restart_now" = "今すぐ再起動";
+"screen_language_picker_restart_later" = "後で";

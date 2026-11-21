@@ -34,6 +34,7 @@ enum A11yIdentifiers {
     static let serverConfirmationScreen = ServerConfirmationScreen()
     static let sessionVerificationScreen = SessionVerificationScreen()
     static let settingsScreen = SettingsScreen()
+    static let languagePickerScreen = LanguagePickerScreen()
     static let softLogoutScreen = SoftLogoutScreen()
     static let startChatScreen = StartChatScreen()
     static let roomMemberDetailsScreen = RoomMemberDetailsScreen()
@@ -288,6 +289,23 @@ enum A11yIdentifiers {
         let advancedSettings = "settings_advanced-settings"
         let developerOptions = "settings_developer-options"
         let logout = "settings-logout"
+        let language = "settings-language"
+    }
+    
+    struct LanguagePickerScreen {
+        let systemDefault = "language_picker-system_default"
+        let english = "language_picker-english"
+        let japanese = "language_picker-japanese"
+        let vietnamese = "language_picker-vietnamese"
+        
+        func languageRow(_ setting: LanguageSetting) -> String {
+            switch setting {
+            case .systemDefault: systemDefault
+            case .english: english
+            case .japanese: japanese
+            case .vietnamese: vietnamese
+            }
+        }
     }
     
     struct SoftLogoutScreen {

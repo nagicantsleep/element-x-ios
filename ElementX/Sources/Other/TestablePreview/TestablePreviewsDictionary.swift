@@ -80,6 +80,7 @@ enum TestablePreviewsDictionary {
             "KnockRequestsListEmptyStateView_Previews" : KnockRequestsListEmptyStateView_Previews.self,
             "KnockRequestsListScreen_Previews" : KnockRequestsListScreen_Previews.self,
             "LabsScreen_Previews" : LabsScreen_Previews.self,
+            "LanguagePickerScreen_Previews" : LanguagePickerScreen_Previews.self,
             "LeaveSpaceRoomDetailsCell_Previews" : LeaveSpaceRoomDetailsCell_Previews.self,
             "LeaveSpaceView_Previews" : LeaveSpaceView_Previews.self,
             "LegalInformationScreen_Previews" : LegalInformationScreen_Previews.self,

@@ -127,6 +127,13 @@ struct SettingsScreen: View {
     
     private var generalSection: some View {
         Section {
+            ListRow(label: .default(title: UntranslatedL10n.screenLanguagePickerTitle,
+                                    icon: \.translate),
+                    kind: .navigationLink {
+                        context.send(viewAction: .language)
+                    })
+                    .accessibilityIdentifier(A11yIdentifiers.settingsScreen.language)
+            
             ListRow(label: .default(title: L10n.commonAdvancedSettings,
                                     icon: \.settings),
                     kind: .navigationLink {

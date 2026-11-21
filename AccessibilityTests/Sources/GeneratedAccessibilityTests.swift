@@ -295,6 +295,10 @@ extension AccessibilityTests {
         try await performAccessibilityAudit(named: "LabsScreen_Previews")
     }
 
+    func testLanguagePickerScreen() async throws {
+        try await performAccessibilityAudit(named: "LanguagePickerScreen_Previews")
+    }
+
     func testLeaveSpaceRoomDetailsCell() async throws {
         try await performAccessibilityAudit(named: "LeaveSpaceRoomDetailsCell_Previews")
     }

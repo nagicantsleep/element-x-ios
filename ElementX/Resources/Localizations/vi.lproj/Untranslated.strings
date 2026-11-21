@@ -27,3 +27,9 @@
 "composer_send_later_custom_title" = "Gửi sau";
 "composer_scheduled_failed" = "Không hẹn giờ được tin nhắn.";
 "composer_scheduled_menu_title" = "Tin nhắn hẹn giờ";
+"screen_language_picker_title" = "Ngôn ngữ";
+"screen_language_picker_system_default" = "Mặc định hệ thống";
+"screen_language_picker_changed_title" = "Ngôn ngữ đã thay đổi";
+"screen_language_picker_changed_message" = "Khởi động lại ứng dụng để áp dụng ngôn ngữ mới.";
+"screen_language_picker_restart_now" = "Khởi động lại";
+"screen_language_picker_restart_later" = "Để sau";

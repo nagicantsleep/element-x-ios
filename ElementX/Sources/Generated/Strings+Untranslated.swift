@@ -58,6 +58,18 @@ internal nonisolated enum UntranslatedL10n {
   internal static var screenFriendsTitle: String { return UntranslatedL10n.tr("Untranslated", "screen_friends_title") }
   /// Search
   internal static var screenHomeTabSearch: String { return UntranslatedL10n.tr("Untranslated", "screen_home_tab_search") }
+  /// Restart the app to apply the new language.
+  internal static var screenLanguagePickerChangedMessage: String { return UntranslatedL10n.tr("Untranslated", "screen_language_picker_changed_message") }
+  /// Language changed
+  internal static var screenLanguagePickerChangedTitle: String { return UntranslatedL10n.tr("Untranslated", "screen_language_picker_changed_title") }
+  /// Later
+  internal static var screenLanguagePickerRestartLater: String { return UntranslatedL10n.tr("Untranslated", "screen_language_picker_restart_later") }
+  /// Restart now
+  internal static var screenLanguagePickerRestartNow: String { return UntranslatedL10n.tr("Untranslated", "screen_language_picker_restart_now") }
+  /// System default
+  internal static var screenLanguagePickerSystemDefault: String { return UntranslatedL10n.tr("Untranslated", "screen_language_picker_system_default") }
+  /// Language
+  internal static var screenLanguagePickerTitle: String { return UntranslatedL10n.tr("Untranslated", "screen_language_picker_title") }
   /// Cancel
   internal static var screenScheduledMessagesCancel: String { return UntranslatedL10n.tr("Untranslated", "screen_scheduled_messages_cancel") }
   /// No scheduled messages
