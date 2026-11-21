@@ -127,7 +127,7 @@ nonisolated extension UntranslatedL10n {
         return translation
       }
     }
-    return trIn("en", table, key) ?? key
+    return trIn("en", table, key, args) ?? key
   }
 
   private static func trIn(_ language: String, _ table: String, _ key: String, _ args: CVarArg...) -> String? {

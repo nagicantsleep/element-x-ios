@@ -104,6 +104,8 @@ final class LocalizationTests {
         // French ships no Untranslated table at all
         Bundle.overrideLocalizations = ["fr"]
         #expect(UntranslatedL10n.screenFriendsTitle == "Friends")
+        // en fallback must forward format args (plurals go through tr with an arg)
+        #expect(UntranslatedL10n.untranslatedPlural(5) == "5 untranslated items")
     }
     
     /// Test untranslated strings default to English on an English device
