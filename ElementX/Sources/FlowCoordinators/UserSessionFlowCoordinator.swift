@@ -324,7 +324,7 @@ class UserSessionFlowCoordinator: FlowCoordinatorProtocol {
             .store(in: &cancellables)
         
         setupReachabilityObserver()
-
+        
         onboardingFlowCoordinator.actions
             .sink { [weak self] action in
                 guard let self else { return }
@@ -585,7 +585,7 @@ class UserSessionFlowCoordinator: FlowCoordinatorProtocol {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] homeserverReachability, networkReachability in
                 MXLog.info("Homeserver reachability: \(homeserverReachability)")
-
+                
                 guard let self else { return }
                 switch (networkReachability, homeserverReachability) {
                 case (.unreachable, _):
@@ -603,7 +603,7 @@ class UserSessionFlowCoordinator: FlowCoordinatorProtocol {
             }
             .store(in: &cancellables)
     }
-
+    
     private func setupCallObservers() {
         flowParameters.elementCallService.actions
             .receive(on: DispatchQueue.main)
