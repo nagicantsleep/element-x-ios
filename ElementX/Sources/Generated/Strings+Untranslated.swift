@@ -10,6 +10,24 @@ import Foundation
 // swiftlint:disable explicit_type_interface function_parameter_count identifier_name line_length
 // swiftlint:disable nesting type_body_length type_name vertical_whitespace_opening_braces
 internal nonisolated enum UntranslatedL10n {
+  /// Failed to schedule the message.
+  internal static var composerScheduledFailed: String { return UntranslatedL10n.tr("Untranslated", "composer_scheduled_failed") }
+  /// Scheduled messages
+  internal static var composerScheduledMenuTitle: String { return UntranslatedL10n.tr("Untranslated", "composer_scheduled_menu_title") }
+  /// Send later
+  internal static var composerSendLater: String { return UntranslatedL10n.tr("Untranslated", "composer_send_later") }
+  /// Custom…
+  internal static var composerSendLaterCustom: String { return UntranslatedL10n.tr("Untranslated", "composer_send_later_custom") }
+  /// Send later
+  internal static var composerSendLaterCustomTitle: String { return UntranslatedL10n.tr("Untranslated", "composer_send_later_custom_title") }
+  /// In 1 hour
+  internal static var composerSendLaterIn1Hour: String { return UntranslatedL10n.tr("Untranslated", "composer_send_later_in_1_hour") }
+  /// In 30 minutes
+  internal static var composerSendLaterIn30Minutes: String { return UntranslatedL10n.tr("Untranslated", "composer_send_later_in_30_minutes") }
+  /// In 5 minutes
+  internal static var composerSendLaterIn5Minutes: String { return UntranslatedL10n.tr("Untranslated", "composer_send_later_in_5_minutes") }
+  /// Tomorrow morning
+  internal static var composerSendLaterTomorrowMorning: String { return UntranslatedL10n.tr("Untranslated", "composer_send_later_tomorrow_morning") }
   /// Accept
   internal static var screenFriendsAccept: String { return UntranslatedL10n.tr("Untranslated", "screen_friends_accept") }
   /// Add friend
