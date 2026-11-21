@@ -2013,6 +2013,7 @@
 		2429224EB0EEA34D35CE9249 /* UserIndicatorControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserIndicatorControllerTests.swift; sourceTree = "<group>"; };
 		2441E2424E78A40FC95DBA76 /* AudioRecorderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioRecorderTests.swift; sourceTree = "<group>"; };
 		248649EBA5BC33DB93698734 /* SessionVerificationControllerProxyMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionVerificationControllerProxyMock.swift; sourceTree = "<group>"; };
+		24C4F9C4034781999B51845C /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Untranslated.strings; sourceTree = "<group>"; };
 		24E637CF570711FB5FD63DEA /* fi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fi; path = fi.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		24EC819497BB5F8C4998D760 /* RoomListFilterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomListFilterView.swift; sourceTree = "<group>"; };
 		24F5530B2212862FA4BEFF2D /* HomeScreenViewModelProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeScreenViewModelProtocol.swift; sourceTree = "<group>"; };
@@ -10125,6 +10126,7 @@
 			isa = PBXVariantGroup;
 			children = (
 				AA19C32BD97F45847724E09A /* en */,
+				24C4F9C4034781999B51845C /* ja */,
 				EC226B61CB1A70CE86CFB7F4 /* vi */,
 			);
 			name = Untranslated.strings;
