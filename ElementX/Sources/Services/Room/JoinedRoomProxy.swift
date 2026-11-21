@@ -145,6 +145,19 @@ class JoinedRoomProxy: JoinedRoomProxyProtocol {
         })
     }
     
+    func latestMessageInfo() async -> (sender: String, msgType: String)? {
+        let latestEvent = await room.latestEvent()
+        
+        guard case let .remote(_, sender, _, _, content) = latestEvent,
+              case let .msgLike(msgLike) = content,
+              case let .message(messageContent) = msgLike.kind,
+              case let .other(msgtype, _) = messageContent.msgType else {
+            return nil
+        }
+        
+        return (sender, msgtype)
+    }
+    
     func timelineFocusedOnEvent(eventID: String, numberOfEvents: UInt16) async -> Result<TimelineProxyProtocol, RoomProxyError> {
         do {
             let openRoomSpan = analyticsService.signpost.addSpan(.timelineLoad, toTransaction: .notificationToMessage)

@@ -76,6 +76,11 @@ enum TimelineProxyError: Error {
     case sdkError(Error)
 }
 
+/// A custom `m.room.message` msgtype could not be built by the SDK.
+enum MessageContentBuildError: Error {
+    case invalidMsgType
+}
+
 /// Element X proxies generally wrap the counterpart RustSDK objects while providing platform specific
 /// interfaces. In this case it composes methods for interacting with a room's timeline and should be used alongside
 /// the ``TimelineItemProviderProtocol`` which offers a reactive interface to timeline changes.
@@ -146,6 +151,9 @@ protocol TimelineProxyProtocol: Sendable {
     func markAsRead(receiptType: ReceiptType) async -> Result<Void, TimelineProxyError>
     
     func sendMessageEventContent(_ messageContent: RoomMessageEventContentWithoutRelation) async -> Result<Void, TimelineProxyError>
+    
+    /// Sends a message with a custom `m.room.message` msgtype, e.g. the Friends request marker.
+    func sendMessage(msgType: String, body: String) async -> Result<Void, TimelineProxyError>
     
     func sendMessage(_ message: String,
                      html: String?,

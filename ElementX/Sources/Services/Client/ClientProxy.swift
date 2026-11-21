@@ -336,6 +336,29 @@ class ClientProxy: ClientProxyProtocol {
         client.homeserver()
     }
     
+    func accessToken() async -> String? {
+        (try? client.session())?.accessToken
+    }
+    
+    func accountData(eventType: String) async -> Result<String?, ClientProxyError> {
+        do {
+            return try await .success(client.accountData(eventType: eventType))
+        } catch {
+            MXLog.error("Failed reading account data \(eventType) with error: \(error)")
+            return .failure(.sdkError(error))
+        }
+    }
+    
+    func setAccountData(eventType: String, content: String) async -> Result<Void, ClientProxyError> {
+        do {
+            try await client.setAccountData(eventType: eventType, content: content)
+            return .success(())
+        } catch {
+            MXLog.error("Failed writing account data \(eventType) with error: \(error)")
+            return .failure(.sdkError(error))
+        }
+    }
+    
     var canDeactivateAccount: Bool {
         client.canDeactivateAccount()
     }

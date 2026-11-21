@@ -48,6 +48,13 @@ struct UserProfileScreen: View {
                     })
                     .accessibilityIdentifier(A11yIdentifiers.userProfileScreen.editProfile)
             
+            ListRow(label: .default(title: UntranslatedL10n.screenFriendsTitle,
+                                    icon: \.user),
+                    kind: .navigationLink {
+                        context.send(viewAction: .showFriends)
+                    })
+                    .accessibilityIdentifier(A11yIdentifiers.userProfileScreen.friends)
+            
             ListRow(label: .default(title: L10n.commonSettings,
                                     icon: \.settings),
                     kind: .navigationLink {

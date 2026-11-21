@@ -25,6 +25,8 @@ enum UserProfileScreenCoordinatorAction {
     case editProfile
     /// Z/L layout: only emitted from the Profile tab (own user).
     case showSettings
+    /// Z/L layout: only emitted from the Profile tab (own user).
+    case showFriends
     case dismiss
 }
 
@@ -60,6 +62,8 @@ final class UserProfileScreenCoordinator: CoordinatorProtocol {
                 actionsSubject.send(.editProfile)
             case .showSettings:
                 actionsSubject.send(.showSettings)
+            case .showFriends:
+                actionsSubject.send(.showFriends)
             case .dismiss:
                 actionsSubject.send(.dismiss)
             }

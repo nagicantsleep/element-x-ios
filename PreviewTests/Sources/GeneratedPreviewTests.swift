@@ -327,6 +327,13 @@ extension PreviewTests {
     }
 
     @Test
+    func friendsScreen() async throws {
+        for (index, preview) in FriendsScreen_Previews._allPreviews.enumerated() {
+            try await assertSnapshots(matching: preview, step: index)
+        }
+    }
+
+    @Test
     func fullscreenDialog() async throws {
         for (index, preview) in FullscreenDialog_Previews._allPreviews.enumerated() {
             try await assertSnapshots(matching: preview, step: index)

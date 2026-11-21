@@ -127,6 +127,15 @@ protocol ClientProxyProtocol: AnyObject {
     
     var userIDServerName: String? { get }
     
+    /// The session's access token, used by client API extensions. `nil` when not backed by a real SDK client.
+    func accessToken() async -> String?
+    
+    /// Reads a global account data event, returning its raw JSON content or `nil` when unset.
+    func accountData(eventType: String) async -> Result<String?, ClientProxyError>
+    
+    /// Writes a global account data event with the given raw JSON content.
+    func setAccountData(eventType: String, content: String) async -> Result<Void, ClientProxyError>
+    
     var userProfilePublisher: CurrentValuePublisher<UserProfile, Never> { get }
     
     /// We delay fetching this until after the first sync. Nil until then

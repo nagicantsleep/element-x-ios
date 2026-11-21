@@ -187,6 +187,10 @@ extension AccessibilityTests {
         try await performAccessibilityAudit(named: "FormattingToolbar_Previews")
     }
 
+    func testFriendsScreen() async throws {
+        try await performAccessibilityAudit(named: "FriendsScreen_Previews")
+    }
+
     func testFullscreenDialog() async throws {
         try await performAccessibilityAudit(named: "FullscreenDialog_Previews")
     }

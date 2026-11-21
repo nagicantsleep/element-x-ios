@@ -38,6 +38,7 @@ enum A11yIdentifiers {
     static let startChatScreen = StartChatScreen()
     static let roomMemberDetailsScreen = RoomMemberDetailsScreen()
     static let userProfileScreen = UserProfileScreen()
+    static let friendsScreen = FriendsScreen()
     static let createRoomScreen = CreateRoomScreen()
     static let inviteUsersScreen = InviteUsersScreen()
     static let notificationSettingsScreen = NotificationSettingsScreen()
@@ -212,6 +213,15 @@ enum A11yIdentifiers {
     struct UserProfileScreen {
         let editProfile = "user_profile-edit_profile"
         let settings = "user_profile-settings"
+        let friends = "user_profile-friends"
+    }
+    
+    struct FriendsScreen {
+        let addFriendField = "friends-add_friend_field"
+        let addFriendButton = "friends-add_friend_button"
+        let accept = "friends-accept"
+        let reject = "friends-reject"
+        let cancel = "friends-cancel"
     }
     
     struct RoomNotificationSettingsScreen {

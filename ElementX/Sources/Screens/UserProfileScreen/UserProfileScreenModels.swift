@@ -13,6 +13,7 @@ enum UserProfileScreenViewModelAction {
     case startCall(roomProxy: JoinedRoomProxyProtocol, isVoiceCall: Bool)
     case editProfile
     case showSettings
+    case showFriends
     case dismiss
 }
 
@@ -52,6 +53,8 @@ enum UserProfileScreenViewAction {
     case editProfile
     /// Z/L layout: only shown for the signed-in user (the Profile tab).
     case showSettings
+    /// Z/L layout: only shown for the signed-in user (the Profile tab).
+    case showFriends
     case dismiss
 }
 

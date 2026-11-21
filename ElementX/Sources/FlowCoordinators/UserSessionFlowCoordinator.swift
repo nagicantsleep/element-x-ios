@@ -47,6 +47,9 @@ class UserSessionFlowCoordinator: FlowCoordinatorProtocol {
     
     // Z/L layout: retained so the Profile tab can push "Edit profile" onto its own stack.
     private let profileStackCoordinator: NavigationStackCoordinator
+    
+    /// Shared across Friends screens while the session lives, so the DM marker observer keeps state.
+    private var friendsService: FriendsService?
     // periphery:ignore - retaining purpose
     private var userProfileScreenCoordinator: UserProfileScreenCoordinator?
     
@@ -268,6 +271,8 @@ class UserSessionFlowCoordinator: FlowCoordinatorProtocol {
                     presentUserDetailsEditScreen()
                 case .showSettings:
                     handleAppRoute(.settings, animated: true)
+                case .showFriends:
+                    presentFriendsScreen()
                 case .openDirectChat, .startCall, .dismiss:
                     // Not supported from the Profile tab (own user, not presented modally).
                     break
@@ -320,6 +325,16 @@ class UserSessionFlowCoordinator: FlowCoordinatorProtocol {
                 
                 attemptStartingOnboarding()
                 setupSessionVerificationRequestsObserver()
+            }
+            .store(in: &cancellables)
+        
+        // Z/L social layer: web-originated friend requests travel as DM markers, scanned on sync.
+        userSession.clientProxy.actionsPublisher
+            .filter(\.isSyncUpdate)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                guard let self else { return }
+                Task { await friendsService?.observeIncomingRequests() }
             }
             .store(in: &cancellables)
         
@@ -438,6 +453,17 @@ class UserSessionFlowCoordinator: FlowCoordinatorProtocol {
             }
             .store(in: &cancellables)
         
+        profileStackCoordinator.push(coordinator)
+    }
+    
+    /// Z/L layout: pushes the Friends screen onto the Profile tab's own navigation stack.
+    private func presentFriendsScreen() {
+        let friendsService = friendsService ?? FriendsService(clientProxy: userSession.clientProxy)
+        self.friendsService = friendsService
+        
+        let coordinator = FriendsScreenCoordinator(parameters: .init(friendsService: friendsService,
+                                                                     userIndicatorController: flowParameters.userIndicatorController,
+                                                                     ownUserID: userSession.clientProxy.userID))
         profileStackCoordinator.push(coordinator)
     }
     

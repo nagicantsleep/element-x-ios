@@ -10,6 +10,34 @@ import Foundation
 // swiftlint:disable explicit_type_interface function_parameter_count identifier_name line_length
 // swiftlint:disable nesting type_body_length type_name vertical_whitespace_opening_braces
 internal nonisolated enum UntranslatedL10n {
+  /// Accept
+  internal static var screenFriendsAccept: String { return UntranslatedL10n.tr("Untranslated", "screen_friends_accept") }
+  /// Add friend
+  internal static var screenFriendsAddHeader: String { return UntranslatedL10n.tr("Untranslated", "screen_friends_add_header") }
+  /// Enter a Matrix ID, e.g. @alice:example.org
+  internal static var screenFriendsAddHint: String { return UntranslatedL10n.tr("Untranslated", "screen_friends_add_hint") }
+  /// Cancel request
+  internal static var screenFriendsCancel: String { return UntranslatedL10n.tr("Untranslated", "screen_friends_cancel") }
+  /// You are now friends.
+  internal static var screenFriendsErrorAdded: String { return UntranslatedL10n.tr("Untranslated", "screen_friends_error_added") }
+  /// You are already friends.
+  internal static var screenFriendsErrorAlreadyFriends: String { return UntranslatedL10n.tr("Untranslated", "screen_friends_error_already_friends") }
+  /// Enter a full Matrix ID, e.g. @alice:example.org.
+  internal static var screenFriendsErrorInvalidId: String { return UntranslatedL10n.tr("Untranslated", "screen_friends_error_invalid_id") }
+  /// Friend request sent.
+  internal static var screenFriendsErrorRequestSent: String { return UntranslatedL10n.tr("Untranslated", "screen_friends_error_request_sent") }
+  /// Friend requests
+  internal static var screenFriendsIncomingHeader: String { return UntranslatedL10n.tr("Untranslated", "screen_friends_incoming_header") }
+  /// Friends
+  internal static var screenFriendsListHeader: String { return UntranslatedL10n.tr("Untranslated", "screen_friends_list_header") }
+  /// My QR
+  internal static var screenFriendsMyQr: String { return UntranslatedL10n.tr("Untranslated", "screen_friends_my_qr") }
+  /// Sent requests
+  internal static var screenFriendsOutgoingHeader: String { return UntranslatedL10n.tr("Untranslated", "screen_friends_outgoing_header") }
+  /// Reject
+  internal static var screenFriendsReject: String { return UntranslatedL10n.tr("Untranslated", "screen_friends_reject") }
+  /// Friends
+  internal static var screenFriendsTitle: String { return UntranslatedL10n.tr("Untranslated", "screen_friends_title") }
   /// Search
   internal static var screenHomeTabSearch: String { return UntranslatedL10n.tr("Untranslated", "screen_home_tab_search") }
   /// Search for chats and messages

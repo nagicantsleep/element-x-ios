@@ -474,6 +474,24 @@ final class TimelineProxy: TimelineProxyProtocol {
         return .success(())
     }
     
+    func sendMessage(msgType: String, body: String) async -> Result<Void, TimelineProxyError> {
+        MXLog.info("Sending message with msgtype: \(msgType)")
+        
+        guard let messageContent = timeline.createMessageContent(msgType: .other(msgtype: msgType, body: body)) else {
+            MXLog.error("Failed creating message content for msgtype: \(msgType)")
+            return .failure(.sdkError(MessageContentBuildError.invalidMsgType))
+        }
+        do {
+            _ = try await timeline.send(msg: messageContent)
+            MXLog.info("Finished sending message")
+        } catch {
+            MXLog.error("Failed sending message with error: \(error)")
+            return .failure(.sdkError(error))
+        }
+        
+        return .success(())
+    }
+    
     func sendReadReceipt(for eventID: String, type: ReceiptType) async -> Result<Void, TimelineProxyError> {
         MXLog.info("Sending read receipt for eventID: \(eventID)")
         

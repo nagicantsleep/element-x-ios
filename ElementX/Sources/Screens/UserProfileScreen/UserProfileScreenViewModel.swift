@@ -70,6 +70,8 @@ class UserProfileScreenViewModel: UserProfileScreenViewModelType, UserProfileScr
             actionsSubject.send(.editProfile)
         case .showSettings:
             actionsSubject.send(.showSettings)
+        case .showFriends:
+            actionsSubject.send(.showFriends)
         case .dismiss:
             actionsSubject.send(.dismiss)
         }

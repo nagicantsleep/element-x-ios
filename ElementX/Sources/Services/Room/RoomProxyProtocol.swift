@@ -75,6 +75,10 @@ protocol JoinedRoomProxyProtocol: RoomProxyProtocol {
     
     var timeline: TimelineProxyProtocol { get }
     
+    /// The sender and `m.room.message` msgtype of the room's latest message when it uses a custom
+    /// msgtype (e.g. the Friends request marker), `nil` for standard msgtypes or non-message events.
+    func latestMessageInfo() async -> (sender: String, msgType: String)?
+    
     var predecessorRoom: PredecessorRoom? { get }
     
     func subscribeForUpdates() async
