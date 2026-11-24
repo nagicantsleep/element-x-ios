@@ -15,14 +15,17 @@ extension View {
     ///   - insets: defaults to what we use for file timeline items, text uses custom values
     ///   - color: self explanatory, defaults to subtle secondary
     ///   - borderColor: an optional colour for a border around the bubble
+    ///   - cornerRadius: the bubble corner radius (ADR 0016 per-theme knob, stock keeps 18)
     func bubbleBackground(isOutgoing: Bool = true,
                           insets: EdgeInsets = .init(top: 8, leading: 12, bottom: 8, trailing: 12),
                           color: @autoclosure @MainActor () -> Color? = .compound.bgSubtleSecondary,
-                          borderColor: @autoclosure @MainActor () -> Color? = nil) -> some View {
+                          borderColor: @autoclosure @MainActor () -> Color? = nil,
+                          cornerRadius: @autoclosure @MainActor () -> CGFloat = 18) -> some View {
         modifier(TimelineItemBubbleBackgroundModifier(isOutgoing: isOutgoing,
                                                       insets: insets,
                                                       color: color(),
-                                                      borderColor: borderColor()))
+                                                      borderColor: borderColor(),
+                                                      cornerRadius: cornerRadius()))
     }
 }
 
@@ -33,15 +36,16 @@ private struct TimelineItemBubbleBackgroundModifier: ViewModifier {
     let insets: EdgeInsets
     var color: Color?
     var borderColor: Color?
+    var cornerRadius: CGFloat
     
     func body(content: Content) -> some View {
         content
             .padding(insets)
             .background(color)
-            .cornerRadius(18, corners: roundedCorners)
+            .cornerRadius(cornerRadius, corners: roundedCorners)
             .overlay {
                 if let borderColor {
-                    RoundedCornerShape(radius: 18, corners: roundedCorners)
+                    RoundedCornerShape(radius: cornerRadius, corners: roundedCorners)
                         .stroke(borderColor)
                 }
             }

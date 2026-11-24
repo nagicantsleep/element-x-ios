@@ -48,3 +48,10 @@
 "soft_logout_signin_notice" = "Your homeserver (%1$s) admin has signed you out of your account %2$s (%3$s).";
 "soft_logout_signin_title" = "Sign in";
 "untranslated" = "Untranslated";
+"brand_theme_automatic" = "Automatic (by language)";
+"brand_theme_default" = "Default";
+"brand_theme_z" = "Z theme";
+"brand_theme_l" = "L theme";
+"friend_request_display_body" = "👋 Friend request";
+"read_indicator_read" = "Read";
+"read_indicator_read_format" = "Read %lu";

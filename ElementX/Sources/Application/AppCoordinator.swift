@@ -231,7 +231,7 @@ class AppCoordinator: AppCoordinatorProtocol, AuthenticationFlowCoordinatorDeleg
                     window.overrideUserInterfaceStyle = appAppearance.interfaceStyle
                 }
             }
-            .onReceive(appSettings.brandThemePublisher) { [weak self] _ in
+            .onReceive(appSettings.brandThemeChoicePublisher) { [weak self] _ in
                 guard let self else { return }
                 
                 // Re-apply the Compound colour token overrides when the brand theme changes.

@@ -9,18 +9,34 @@
 import Compound
 import SwiftUI
 
+/// ADR 0016: the text colour to use on the outgoing bubble, or `nil` for the stock
+/// `textPrimary`. Set by the bubble styler for outgoing items so TextKit-rendered message text
+/// picks the per-theme knob up through the environment.
+private struct BrandOutgoingTextColorKey: EnvironmentKey {
+    static let defaultValue: Color? = nil
+}
+
+extension EnvironmentValues {
+    var brandOutgoingTextColor: Color? {
+        get { self[BrandOutgoingTextColorKey.self] }
+        set { self[BrandOutgoingTextColorKey.self] = newValue }
+    }
+}
+
 struct FormattedBodyText: View {
+    @Environment(\.brandOutgoingTextColor) private var brandOutgoingTextColor
+    
     private let attributedString: AttributedString
     private let trailingReservedSize: CGSize
     private let boostFontSize: Bool
     
-    private let defaultAttributesContainer: AttributeContainer = {
+    private var defaultAttributesContainer: AttributeContainer {
         var container = AttributeContainer()
         // Equivalent to compound's bodyLG
         container.font = UIFont.preferredFont(forTextStyle: .body)
-        container.foregroundColor = UIColor.compound.textPrimary
+        container.foregroundColor = UIColor(brandOutgoingTextColor ?? .compound.textPrimary)
         return container
-    }()
+    }
     
     private var attributedComponents: [AttributedStringBuilderComponent] {
         var adjustedAttributedString = attributedString

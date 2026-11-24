@@ -25,10 +25,10 @@ nonisolated struct BrandCompoundHook: CompoundHookProtocol {
             uiColors.override(keyPath, with: nil)
         }
         
-        for (keyPath, color) in appSettings.brandTheme.colorOverrides {
+        for (keyPath, color) in appSettings.effectiveBrandTheme.colorOverrides {
             colors.override(keyPath, with: color)
         }
-        for (keyPath, color) in appSettings.brandTheme.uiColorOverrides {
+        for (keyPath, color) in appSettings.effectiveBrandTheme.uiColorOverrides {
             uiColors.override(keyPath, with: color)
         }
     }

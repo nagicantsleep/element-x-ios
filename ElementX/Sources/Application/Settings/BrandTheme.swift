@@ -24,6 +24,32 @@ nonisolated enum BrandTheme: String, CaseIterable, Codable {
     case z
     case l
     
+    /// The themes offered by the brand picker, in display order.
+    static let pickerChoices: [BrandTheme] = [.defaultTheme, .z, .l]
+    
+    /// Resolves the theme to apply: an explicit choice always wins; with no stored choice
+    /// ("Automatic") the effective app language picks the theme — `vi` → Z, `ja` → L, else Default.
+    /// A fresh install has no stored choice, so it renders Automatic.
+    static func resolve(choice: BrandTheme?, preferredLocalization: String?) -> BrandTheme {
+        if let choice {
+            return choice
+        }
+        
+        // Localizations can be regional (e.g. `vi-VN`); compare the primary language code.
+        let language = preferredLocalization.flatMap {
+            Locale(identifier: $0).language.languageCode?.identifier ?? $0
+        } ?? ""
+        
+        switch language {
+        case "vi":
+            return .z
+        case "ja":
+            return .l
+        default:
+            return .defaultTheme
+        }
+    }
+    
     var name: String {
         switch self {
         case .defaultTheme:
@@ -56,23 +82,6 @@ nonisolated enum BrandTheme: String, CaseIterable, Codable {
             return Self.zUIColorOverrides
         case .l:
             return Self.lUIColorOverrides
-        }
-    }
-    
-    /// The "from me" bubble colour for this brand, or `nil` to keep Compound's default.
-    ///
-    /// Compound's bubble tokens (`_bgBubbleIncoming` / `_bgBubbleOutgoing`) are plain stored
-    /// properties on `CompoundColors`, not `CompoundColorTokens` members, so they bypass the
-    /// runtime override dictionary and cannot be retinted through `override(_:with:)`. The bubble
-    /// styler therefore reads this value directly instead.
-    var outgoingBubbleColor: Color? {
-        switch self {
-        case .defaultTheme:
-            return nil
-        case .z:
-            return Color(uiColor: Self.uiColor("#E6F0FF", "#14263D"))
-        case .l:
-            return Color(uiColor: Self.uiColor("#E6F9EE", "#12301F"))
         }
     }
     
@@ -204,7 +213,8 @@ nonisolated extension BrandTheme {
 
 // MARK: - Hex parsing
 
-private nonisolated extension BrandTheme {
+/// `nonisolated` rather than `private`: `BrandLayout` reuses these helpers for its knob colours.
+nonisolated extension BrandTheme {
     /// Builds an adaptive SwiftUI colour that resolves to `light` or `dark` with the interface style.
     static func color(_ light: String, _ dark: String) -> Color {
         Color(uiColor(light, dark))

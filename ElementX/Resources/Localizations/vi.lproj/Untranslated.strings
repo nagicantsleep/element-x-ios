@@ -33,3 +33,10 @@
 "screen_language_picker_changed_message" = "Khởi động lại ứng dụng để áp dụng ngôn ngữ mới.";
 "screen_language_picker_restart_now" = "Khởi động lại";
 "screen_language_picker_restart_later" = "Để sau";
+"brand_theme_automatic" = "Tự động (theo ngôn ngữ)";
+"brand_theme_default" = "Mặc định";
+"brand_theme_z" = "Giao diện Z";
+"brand_theme_l" = "Giao diện L";
+"friend_request_display_body" = "👋 Lời mời kết bạn";
+"read_indicator_read" = "Đã xem";
+"read_indicator_read_format" = "Đã xem %lu";

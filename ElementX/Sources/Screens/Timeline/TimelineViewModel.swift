@@ -105,7 +105,7 @@ class TimelineViewModel: TimelineViewModelType, TimelineViewModelProtocol {
                                                        jumpToReadMarkerEnabled: appSettings.jumpToReadMarkerEnabled,
                                                        selection: .init(isEnabled: appSettings.messageMultiSelectEnabled),
                                                        hasPredecessor: roomProxy.predecessorRoom != nil,
-                                                       brandTheme: appSettings.brandTheme,
+                                                       brandTheme: appSettings.effectiveBrandTheme,
                                                        pinnedEventIDs: roomProxy.infoPublisher.value.pinnedEventIDs,
                                                        emojiProvider: emojiProvider,
                                                        linkMetadataProvider: hideTimelineMedia ? nil : linkMetadataProvider,
@@ -599,12 +599,11 @@ class TimelineViewModel: TimelineViewModelType, TimelineViewModelProtocol {
             .weakAssign(to: \.state.jumpToReadMarkerEnabled, on: self)
             .store(in: &cancellables)
         
-        appSettings.brandThemePublisher
+        appSettings.brandThemeChoicePublisher
+            .map { [appSettings] _ in appSettings.effectiveBrandTheme }
             .weakAssign(to: \.state.brandTheme, on: self)
             .store(in: &cancellables)
-        
         setupSelectionSubscriptions()
-        
         userSession.clientProxy.timelineMediaVisibilityPublisher
             .removeDuplicates()
             .flatMap { [weak self] timelineMediaVisibility -> AnyPublisher<Bool, Never> in
@@ -654,10 +653,7 @@ class TimelineViewModel: TimelineViewModelType, TimelineViewModelProtocol {
         }
         
         paginateBackwardsTask = Task { [weak self] in
-            guard let self else {
-                return
-            }
-            
+            guard let self else { return }
             switch await timelineController.paginateBackwards(requestSize: Constants.paginationEventLimit) {
             case .failure:
                 displayErrorToast(L10n.errorFailedLoadingMessages)
@@ -674,10 +670,7 @@ class TimelineViewModel: TimelineViewModelType, TimelineViewModelProtocol {
         }
         
         paginateForwardsTask = Task { [weak self] in
-            guard let self else {
-                return
-            }
-            
+            guard let self else { return }
             switch await timelineController.paginateForwards(requestSize: Constants.paginationEventLimit) {
             case .failure:
                 displayErrorToast(L10n.errorFailedLoadingMessages)

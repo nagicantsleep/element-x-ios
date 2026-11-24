@@ -10,6 +10,14 @@ import Foundation
 // swiftlint:disable explicit_type_interface function_parameter_count identifier_name line_length
 // swiftlint:disable nesting type_body_length type_name vertical_whitespace_opening_braces
 internal nonisolated enum UntranslatedL10n {
+  /// Automatic (by language)
+  internal static var brandThemeAutomatic: String { return UntranslatedL10n.tr("Untranslated", "brand_theme_automatic") }
+  /// Default
+  internal static var brandThemeDefault: String { return UntranslatedL10n.tr("Untranslated", "brand_theme_default") }
+  /// L theme
+  internal static var brandThemeL: String { return UntranslatedL10n.tr("Untranslated", "brand_theme_l") }
+  /// Z theme
+  internal static var brandThemeZ: String { return UntranslatedL10n.tr("Untranslated", "brand_theme_z") }
   /// Failed to schedule the message.
   internal static var composerScheduledFailed: String { return UntranslatedL10n.tr("Untranslated", "composer_scheduled_failed") }
   /// Scheduled messages
@@ -28,6 +36,14 @@ internal nonisolated enum UntranslatedL10n {
   internal static var composerSendLaterIn5Minutes: String { return UntranslatedL10n.tr("Untranslated", "composer_send_later_in_5_minutes") }
   /// Tomorrow morning
   internal static var composerSendLaterTomorrowMorning: String { return UntranslatedL10n.tr("Untranslated", "composer_send_later_tomorrow_morning") }
+  /// 👋 Friend request
+  internal static var friendRequestDisplayBody: String { return UntranslatedL10n.tr("Untranslated", "friend_request_display_body") }
+  /// Read
+  internal static var readIndicatorRead: String { return UntranslatedL10n.tr("Untranslated", "read_indicator_read") }
+  /// Read %lu
+  internal static func readIndicatorReadFormat(_ p1: Int) -> String {
+    return UntranslatedL10n.tr("Untranslated", "read_indicator_read_format", p1)
+  }
   /// Accept
   internal static var screenFriendsAccept: String { return UntranslatedL10n.tr("Untranslated", "screen_friends_accept") }
   /// Add friend

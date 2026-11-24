@@ -20,6 +20,57 @@ struct AppSettingsTests {
         appSettings.override(allowOtherAccountProviders: false)
         #expect(appSettings.defaultAccountProvider == appSettings.accountProviders[0])
     }
+    
+    // MARK: - Brand theme choice (ADR 0016)
+    
+    /// A fresh install has no stored choice: Automatic, resolving from the app language.
+    @Test
+    func brandThemeChoiceDefaultsToAutomatic() {
+        let appSettings = AppSettings.volatile()
+        #expect(appSettings.brandThemeChoice == nil)
+    }
+    
+    /// The effective theme follows the explicit choice regardless of the machine's language.
+    @Test
+    func effectiveBrandThemeFollowsChoice() {
+        let appSettings = AppSettings.volatile()
+        
+        appSettings.brandThemeChoice = .z
+        #expect(appSettings.effectiveBrandTheme == .z)
+        
+        appSettings.brandThemeChoice = .l
+        #expect(appSettings.effectiveBrandTheme == .l)
+        
+        appSettings.brandThemeChoice = .defaultTheme
+        #expect(appSettings.effectiveBrandTheme == .defaultTheme)
+        
+        appSettings.brandThemeChoice = nil
+        // Automatic: the test host runs in English, so it resolves to Default.
+        let language = Bundle.app.preferredLocalizations.first ?? "en"
+        #expect(appSettings.effectiveBrandTheme == BrandTheme.resolve(choice: nil, preferredLocalization: language))
+    }
+    
+    /// A legacy `brandTheme` value stored before ADR 0016 migrates into the optional choice.
+    @Test
+    func legacyBrandThemePreferenceMigrates() throws {
+        let legacyData = try JSONEncoder().encode(BrandTheme.l)
+        let appSettings = AppSettings(store: VolatileUserDefaults(initialValues: ["brandTheme": legacyData]))
+        
+        #expect(appSettings.brandThemeChoice == .l)
+        #expect(appSettings.effectiveBrandTheme == .l)
+    }
+    
+    /// A legacy value only migrates when the new preference hasn't been written yet.
+    @Test
+    func explicitChoiceWinsOverLegacyValue() throws {
+        let legacyData = try JSONEncoder().encode(BrandTheme.z)
+        let choiceData = try JSONEncoder().encode(BrandTheme.defaultTheme)
+        let appSettings = AppSettings(store: VolatileUserDefaults(initialValues: ["brandTheme": legacyData,
+                                                                                  "brandThemeChoice": choiceData]))
+        
+        #expect(appSettings.brandThemeChoice == .defaultTheme)
+        #expect(appSettings.effectiveBrandTheme == .defaultTheme)
+    }
 }
 
 // MARK: - Helpers

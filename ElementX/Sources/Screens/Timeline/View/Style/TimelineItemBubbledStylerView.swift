@@ -131,6 +131,10 @@ struct TimelineItemBubbledStylerView<Content: View>: View {
                 .padding(.leading, bubbleAvatarPadding)
             }
         }
+        // ADR 0016: outgoing text uses the per-theme knob (Z: #081C36, L: #1A1A1A) instead of
+        // the stock `textPrimary`; `nil` keeps the stock colour.
+        .environment(\.brandOutgoingTextColor,
+                     timelineItem.isOutgoing ? context.viewState.brandLayout.outgoingTextColor : nil)
     }
     
     @ViewBuilder
@@ -262,7 +266,8 @@ struct TimelineItemBubbledStylerView<Content: View>: View {
             .bubbleBackground(isOutgoing: timelineItem.isOutgoing,
                               insets: timelineItem.bubbleInsets(hasContentScanningFailure: hasContentScanningFailure),
                               color: hasContentScanningFailure ? .compound.bgCriticalSubtle : timelineItem.bubbleBackgroundColor(brandTheme: context.viewState.brandTheme),
-                              borderColor: hasContentScanningFailure ? .compound.borderCriticalSubtle : nil)
+                              borderColor: hasContentScanningFailure ? .compound.borderCriticalSubtle : nil,
+                              cornerRadius: context.viewState.brandLayout.bubbleCornerRadius ?? 18)
     }
     
     var contentWithReply: some View {
@@ -318,12 +323,14 @@ struct TimelineItemBubbledStylerView<Content: View>: View {
 
 private extension EventBasedTimelineItemProtocol {
     func bubbleBackgroundColor(brandTheme: BrandTheme) -> Color? {
-        // `_bgBubbleOutgoing` is a stored property on `CompoundColors`, not a `CompoundColorTokens`
-        // member, so it isn't reachable by the brand theme's runtime override hook. Read the brand
-        // tint from the view state instead, falling back to Compound's default.
+        // `_bgBubbleOutgoing`/`_bgBubbleIncoming` are stored properties on `CompoundColors`, not
+        // `CompoundColorTokens` members, so they aren't reachable by the brand theme's runtime
+        // override hook. The ADR 0016 knobs come from `BrandLayout` instead, falling back to
+        // Compound's defaults for the stock Default theme.
+        let layout = BrandLayout.layout(for: brandTheme)
         let defaultColor: Color = isOutgoing
-            ? (brandTheme.outgoingBubbleColor ?? .compound._bgBubbleOutgoing)
-            : .compound._bgBubbleIncoming
+            ? (layout.outgoingBubbleColor ?? .compound._bgBubbleOutgoing)
+            : (layout.incomingBubbleColor ?? .compound._bgBubbleIncoming)
         
         switch self {
         case is ImageRoomTimelineItem, is VideoRoomTimelineItem:

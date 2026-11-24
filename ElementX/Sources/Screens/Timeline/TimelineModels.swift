@@ -146,6 +146,12 @@ struct TimelineViewState: BindableState {
     /// `CompoundColorTokens` members, so they bypass the runtime override hook.
     var brandTheme: BrandTheme = .defaultTheme
     
+    /// The per-theme presentation knobs (ADR 0016) derived from ``brandTheme``: bubble colours,
+    /// corner radius, read-indicator style, chat bar accent.
+    var brandLayout: BrandLayout {
+        BrandLayout.layout(for: brandTheme)
+    }
+    
     /// The `pinnedEventIDs` are used only to determine if an item is already pinned or not.
     /// It's updated from the room info, so it's faster than using the timeline
     var pinnedEventIDs: Set<String> = []

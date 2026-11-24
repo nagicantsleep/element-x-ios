@@ -28,8 +28,9 @@ struct AdvancedSettingsScreen: View {
                 
                 ListRow(label: .plain(title: L10n.screenAdvancedSettingsBrandThemeTitle,
                                       description: L10n.screenAdvancedSettingsBrandThemeDescription),
-                        kind: .picker(selection: $context.brandTheme,
-                                      items: BrandTheme.allCases.map { (title: $0.name, tag: $0) }))
+                        kind: .picker(selection: $context.brandThemeChoice,
+                                      items: [(title: BrandTheme.automaticOptionName, tag: nil)] +
+                                          BrandTheme.pickerChoices.map { (title: $0.localizedName, tag: $0) }))
                 
                 ListRow(label: .plain(title: L10n.actionViewSource,
                                       description: L10n.screenAdvancedSettingsViewSourceDescription),
@@ -146,6 +147,27 @@ struct AdvancedSettingsScreen: View {
             Text(context.viewState.liveLocationUpdateFooterAttributedString)
                 .compoundListSectionFooter()
         }
+    }
+}
+
+/// Localized labels for the brand picker. Kept here (not in `BrandTheme.swift`) because the NSE
+/// target compiles `Application/Settings` without the Untranslated string tables.
+extension BrandTheme {
+    /// The localized picker label for a theme.
+    var localizedName: String {
+        switch self {
+        case .defaultTheme:
+            UntranslatedL10n.brandThemeDefault
+        case .z:
+            UntranslatedL10n.brandThemeZ
+        case .l:
+            UntranslatedL10n.brandThemeL
+        }
+    }
+    
+    /// The label shown for the Automatic option (no explicit choice) in the picker.
+    static var automaticOptionName: String {
+        UntranslatedL10n.brandThemeAutomatic
     }
 }
 

@@ -13,6 +13,20 @@ struct TimelineReadReceiptsView: View {
     let timelineItem: EventBasedTimelineItemProtocol
     @EnvironmentObject private var context: TimelineViewModel.Context
     
+    /// ADR 0016: the L theme replaces the receipt avatars with a text label — "Read" for 1:1
+    /// rooms, "Read N" (receipt count) for groups. `.stockAvatars` keeps the avatars (Z/Default).
+    private var readLabel: (text: String, count: Int)? {
+        guard context.viewState.brandLayout.readIndicatorStyle == .textLabel else {
+            return nil
+        }
+        
+        let count = timelineItem.properties.orderedReadReceipts.count
+        guard count > 0 else { return nil }
+        
+        let text = context.viewState.isDM ? UntranslatedL10n.readIndicatorRead : UntranslatedL10n.readIndicatorReadFormat(count)
+        return (text, count)
+    }
+    
     var avatars: [StackedAvatarInfo] {
         timelineItem.properties.orderedReadReceipts.prefix(displayNumber).map { receipt in
             StackedAvatarInfo(url: context.viewState.members[receipt.userID]?.avatarURL,
@@ -22,6 +36,22 @@ struct TimelineReadReceiptsView: View {
     }
     
     var body: some View {
+        if let readLabel {
+            Text(readLabel.text)
+                .font(.compound.bodySM)
+                .foregroundColor(.compound.textSecondary)
+                .onTapGesture {
+                    context.send(viewAction: .displayReadReceipts(itemID: timelineItem.id))
+                }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(accessibilityLabel)
+                .accessibilityHint(L10n.a11yReadReceiptsTapToShowAllIos)
+        } else {
+            avatarsView
+        }
+    }
+    
+    private var avatarsView: some View {
         HStack(spacing: 2) {
             StackedAvatarsView(overlap: 6,
                                lineWidth: 1,

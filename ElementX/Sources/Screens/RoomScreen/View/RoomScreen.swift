@@ -71,7 +71,8 @@ struct RoomScreen: View {
                 .padding()
                 .animation(.elementDefault, value: markAsReadSource)
             }
-            .background(Color.compound.bgCanvasDefault.ignoresSafeArea())
+            .background(timelineContext.viewState.brandLayout.chatBackgroundColor ?? Color.compound.bgCanvasDefault)
+            .ignoresSafeArea()
             .topBanners([
                 TopBannerLayer(verticalBanners: [
                     TopBannerItem(pinnedItemsBanner, isVisible: context.viewState.shouldShowPinnedEventsBanner && !isVoiceOverEnabled),
@@ -105,7 +106,8 @@ struct RoomScreen: View {
                     
                     composer
                         .padding(.top, 8)
-                        .background(Color.compound.bgCanvasDefault.ignoresSafeArea())
+                        .background(timelineContext.viewState.brandLayout.chatBackgroundColor ?? Color.compound.bgCanvasDefault)
+                        .ignoresSafeArea()
                         .environmentObject(timelineContext)
                         .environment(\.timelineContext, timelineContext)
                         // Make sure the reply header honours the hideTimelineMedia setting too.
@@ -119,6 +121,7 @@ struct RoomScreen: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { toolbar }
             .toolbarBackground(.visible, for: .navigationBar) // Fix the toolbar's background.
+            .modifier(BrandChatNavigationBarModifier(isAccented: timelineContext.viewState.brandLayout.isChatBarAccented))
             .overlay { loadingIndicator }
             .alert(item: $context.alertInfo)
             .timelineMediaPreview(viewModel: $context.mediaPreviewViewModel)
@@ -417,5 +420,26 @@ struct RoomScreen_Previews: PreviewProvider, TestablePreview {
     struct ViewModels {
         let room: RoomScreenViewModelProtocol
         let timeline: TimelineViewModelProtocol
+    }
+}
+
+// MARK: - Z theme chat navigation bar (ADR 0016)
+
+/// Paints the chat navigation bar in the brand accent with white content. Only applied in light
+/// mode — dark mode keeps the stock bar so no dark surface is replaced by an accent slab.
+struct BrandChatNavigationBarModifier: ViewModifier {
+    @Environment(\.colorScheme) private var colorScheme
+    
+    let isAccented: Bool
+    
+    func body(content: Content) -> some View {
+        if isAccented, colorScheme == .light {
+            content
+                .tint(.white)
+                .toolbarColorScheme(.light, for: .navigationBar)
+                .toolbarBackground(Color(uiColor: BrandTheme.uiColor("#0068FF")), for: .navigationBar)
+        } else {
+            content
+        }
     }
 }

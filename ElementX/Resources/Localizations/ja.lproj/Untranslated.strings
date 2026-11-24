@@ -33,3 +33,10 @@
 "screen_language_picker_changed_message" = "アプリを再起動すると新しい言語が適用されます。";
 "screen_language_picker_restart_now" = "今すぐ再起動";
 "screen_language_picker_restart_later" = "後で";
+"brand_theme_automatic" = "自動（言語に合わせる）";
+"brand_theme_default" = "デフォルト";
+"brand_theme_z" = "Zテーマ";
+"brand_theme_l" = "Lテーマ";
+"friend_request_display_body" = "👋 フレンド申請";
+"read_indicator_read" = "既読";
+"read_indicator_read_format" = "既読 %lu";

@@ -185,9 +185,39 @@ final nonisolated class AppSettings: @unchecked Sendable {
     @UserPreference(defaultValue: AppAppearance.system)
     var appAppearance: AppAppearance
     
-    /// The brand theme (colour token overrides) applied at runtime.
-    @UserPreference(defaultValue: BrandTheme.defaultTheme)
-    var brandTheme: BrandTheme
+    /// The user's explicit brand theme choice, or `nil` for "Automatic" (resolve from the app
+    /// language: `vi` → Z, `ja` → L, else Default). Use `effectiveBrandTheme` at render time.
+    ///
+    /// Hand-rolled rather than `@UserPreference`: the macro can't model an optional value whose
+    /// *absence* (missing key) is meaningful — Automatic.
+    var brandThemeChoice: BrandTheme? {
+        get {
+            guard let data = store.data(forKey: "brandThemeChoice") else { return nil }
+            return try? JSONDecoder().decode(BrandTheme.self, from: data)
+        }
+        set {
+            if let newValue {
+                store.set(try? JSONEncoder().encode(newValue), forKey: "brandThemeChoice")
+            } else {
+                store.removeObject(forKey: "brandThemeChoice")
+            }
+            brandThemeChoiceSubject.send(newValue)
+        }
+    }
+    
+    private let brandThemeChoiceSubject = PassthroughSubject<BrandTheme?, Never>()
+    
+    /// Emits the current choice and every subsequent change.
+    var brandThemeChoicePublisher: AnyPublisher<BrandTheme?, Never> {
+        brandThemeChoiceSubject.prepend(brandThemeChoice).eraseToAnyPublisher()
+    }
+    
+    /// The brand theme (colour token overrides) applied at runtime: the explicit choice when
+    /// present, otherwise the language-derived default.
+    var effectiveBrandTheme: BrandTheme {
+        BrandTheme.resolve(choice: brandThemeChoice,
+                           preferredLocalization: Bundle.app.preferredLocalizations.first)
+    }
     
     /// Tracks previous servers the user connected to for autocompletion purposes. Entries are made lowercase on write.
     @UserPreference(key: "previousServers", defaultValue: [])
@@ -482,6 +512,21 @@ final nonisolated class AppSettings: @unchecked Sendable {
     
     init(store: UserDefaultsProtocol) {
         self.store = store
+        migrateLegacyBrandTheme()
+    }
+    
+    /// ADR 0016: the old non-optional `brandTheme` preference ("default"/"z"/"l") becomes the
+    /// optional `brandThemeChoice`, where absence means Automatic. Existing explicit choices
+    /// carry over; a fresh install has no stored choice and resolves from the app language.
+    private func migrateLegacyBrandTheme() {
+        guard store.object(forKey: "brandThemeChoice") == nil,
+              let data = store.object(forKey: "brandTheme") as? Data,
+              let choice = try? JSONDecoder().decode(BrandTheme.self, from: data) else {
+            return
+        }
+        
+        brandThemeChoice = choice
+        store.removeObject(forKey: "brandTheme")
     }
     
     static func volatile() -> AppSettings {
