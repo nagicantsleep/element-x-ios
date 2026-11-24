@@ -216,7 +216,7 @@ final nonisolated class AppSettings: @unchecked Sendable {
     /// present, otherwise the language-derived default.
     var effectiveBrandTheme: BrandTheme {
         BrandTheme.resolve(choice: brandThemeChoice,
-                           preferredLocalization: Bundle.app.preferredLocalizations.first)
+                           preferredLocalization: Bundle.app.effectivePreferredLocalizations.first)
     }
     
     /// Tracks previous servers the user connected to for autocompletion purposes. Entries are made lowercase on write.

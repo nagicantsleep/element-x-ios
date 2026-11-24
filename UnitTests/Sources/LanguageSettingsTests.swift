@@ -11,12 +11,26 @@ import Foundation
 import Testing
 
 final class LanguageSettingsTests {
+    /// Serialises tests that mutate the process-wide localisation overrides: Swift Testing
+    /// runs suites concurrently and the overrides are `nonisolated(unsafe)` globals shared
+    /// with LocalizationTests.
+    private nonisolated(unsafe) static let overridesLock = NSLock()
+    
+    /// Every test pins the effective OS language so the suite is hermetic: the machine the
+    /// tests run on may resolve to any language. English is chosen because the Untranslated
+    /// fallback assertions below depend on it.
+    private static let pinnedLanguage: LanguageSetting = .english
+    
+    /// Refcount of live instances pinning the OS language; Swift Testing creates one instance
+    /// per test, so the pin must outlive each instance while any of them is running. Guarded
+    /// by ``overridesLock``.
+    private nonisolated(unsafe) static var pinnedInstanceCount = 0
+    
     /// Each test gets its own suite so the host app's standard defaults are never touched.
     private let suiteName: String
     private let defaults: UserDefaults
     
-    /// The language the OS resolves on this machine — `AppleLanguages` is a global preference
-    /// and suite reads fall back to the global value when the domain has no entry.
+    /// The pinned effective language; the store resolves through the override, never the host.
     private let resolvedLanguage: LanguageSetting
     
     init() {
@@ -24,10 +38,21 @@ final class LanguageSettingsTests {
         UserDefaults(suiteName: suiteName)!.removePersistentDomain(forName: suiteName)
         defaults = UserDefaults(suiteName: suiteName)!
         
-        resolvedLanguage = LanguageSetting(identifier: Bundle.app.preferredLocalizations.first ?? "") ?? .systemDefault
+        Self.overridesLock.lock()
+        Self.pinnedInstanceCount += 1
+        Bundle.overridePreferredLocalizations = [Self.pinnedLanguage.languageCode ?? "en"]
+        Self.overridesLock.unlock()
+        resolvedLanguage = Self.pinnedLanguage
     }
     
     deinit {
+        Self.overridesLock.lock()
+        Self.pinnedInstanceCount -= 1
+        if Self.pinnedInstanceCount == 0 {
+            Bundle.overridePreferredLocalizations = nil
+        }
+        Self.overridesLock.unlock()
+        
         UserDefaults(suiteName: suiteName)?.removePersistentDomain(forName: suiteName)
     }
     
@@ -40,7 +65,7 @@ final class LanguageSettingsTests {
         defaults.persistentDomain(forName: suiteName)?[LanguageSettingsStore.appleLanguagesKey] as? [String]
     }
     
-    /// A picked language that differs from the machine's resolved language, if any.
+    /// A picked language that differs from the pinned effective language, if any.
     private var differentLanguage: LanguageSetting? {
         [.english, .japanese, .vietnamese].first { $0 != resolvedLanguage }
     }
@@ -95,7 +120,7 @@ final class LanguageSettingsTests {
     @Test
     func needsRestartWhenPickingDifferentLanguage() {
         guard let differentLanguage else {
-            Issue.record("This test requires the host to resolve to one of the picker languages.")
+            Issue.record("This test requires a resolvable language different from the pinned one.")
             return
         }
         
@@ -117,7 +142,7 @@ final class LanguageSettingsTests {
     @Test
     func noRestartNeededWhenChoiceAlreadyApplied() {
         guard resolvedLanguage != .systemDefault else {
-            Issue.record("The host doesn't resolve to one of the picker's languages.")
+            Issue.record("The pinned language doesn't resolve to one of the picker's languages.")
             return
         }
         
@@ -149,6 +174,11 @@ final class LanguageSettingsTests {
     /// The picker titles resolve through the Untranslated tables in the selected language.
     @Test
     func pickerStringsResolveInSelectedLanguage() {
+        // The localisation overrides are process-wide globals also mutated by LocalizationTests;
+        // hold the same lock so concurrently running suites don't observe each other's state.
+        Self.overridesLock.lock()
+        defer { Self.overridesLock.unlock() }
+        
         Bundle.overrideLocalizations = ["vi"]
         #expect(UntranslatedL10n.screenLanguagePickerTitle == "Ngôn ngữ")
         #expect(UntranslatedL10n.screenLanguagePickerSystemDefault == "Mặc định hệ thống")
@@ -157,6 +187,7 @@ final class LanguageSettingsTests {
         #expect(UntranslatedL10n.screenLanguagePickerTitle == "言語")
         #expect(UntranslatedL10n.screenLanguagePickerSystemDefault == "システムデフォルト")
         
+        // With no Untranslated-table override the suite's pinned OS language (English) applies.
         Bundle.overrideLocalizations = nil
         #expect(UntranslatedL10n.screenLanguagePickerTitle == "Language")
         #expect(UntranslatedL10n.screenLanguagePickerSystemDefault == "System default")
@@ -195,7 +226,7 @@ final class LanguageSettingsTests {
     @Test
     func selectingAppliedLanguageSkipsRestartAlert() {
         guard resolvedLanguage != .systemDefault else {
-            Issue.record("The host resolves to a language outside the picker's set.")
+            Issue.record("The pinned language resolves outside the picker's set.")
             return
         }
         

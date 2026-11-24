@@ -11,6 +11,20 @@ import Foundation
 import Testing
 
 final class LocalizationTests {
+    /// Serialises tests that mutate the process-wide localisation overrides: Swift Testing
+    /// runs suites concurrently and the overrides are `nonisolated(unsafe)` globals shared
+    /// with LanguageSettingsTests.
+    private static let overridesLock = NSLock()
+    
+    private func withOverrideLocalizations(_ languages: [String]?, _ body: () -> Void) {
+        Self.overridesLock.lock()
+        defer { Self.overridesLock.unlock() }
+        
+        Bundle.overrideLocalizations = languages
+        body()
+        Bundle.overrideLocalizations = nil
+    }
+    
     deinit {
         Bundle.overrideLocalizations = nil
     }
@@ -18,60 +32,56 @@ final class LocalizationTests {
     /// Test ElementL10n considers app language changes
     @Test
     func appLanguage() {
-        // set app language to English
-        Bundle.overrideLocalizations = ["en"]
+        withOverrideLocalizations(["en"]) {
+            #expect(L10n.testLanguageIdentifier == "en")
+        }
         
-        #expect(L10n.testLanguageIdentifier == "en")
-        
-        // set app language to Italian
-        Bundle.overrideLocalizations = ["it"]
-        
-        #expect(L10n.testLanguageIdentifier == "it")
+        withOverrideLocalizations(["it"]) {
+            #expect(L10n.testLanguageIdentifier == "it")
+        }
     }
     
     /// Test fallback language for a language not supported at all
     @Test
     func fallbackOnNotSupportedLanguage() {
         //  set app language to something Element don't support at all (chose non existing identifier)
-        Bundle.overrideLocalizations = ["xx"]
-        
-        #expect(L10n.testLanguageIdentifier == "en")
+        withOverrideLocalizations(["xx"]) {
+            #expect(L10n.testLanguageIdentifier == "en")
+        }
     }
     
     /// Test fallback language for a language supported but poorly translated
     @Test
     func fallbackOnNotTranslatedKey() {
         //  set app language to something Element supports but use a key that is not translated (we have a key that should never be translated)
-        Bundle.overrideLocalizations = ["it"]
-        
-        #expect(L10n.testLanguageIdentifier == "it")
-        #expect(L10n.testUntranslatedDefaultLanguageIdentifier == "en")
+        withOverrideLocalizations(["it"]) {
+            #expect(L10n.testLanguageIdentifier == "it")
+            #expect(L10n.testUntranslatedDefaultLanguageIdentifier == "en")
+        }
     }
     
     /// Test plurals that ElementL10n considers app language changes
     @Test
     func plurals() {
-        //  set app language to English
-        Bundle.overrideLocalizations = ["en"]
+        withOverrideLocalizations(["en"]) {
+            #expect(L10n.commonMemberCount(1) == "1 Member")
+            #expect(L10n.commonMemberCount(2) == "2 Members")
+        }
         
-        #expect(L10n.commonMemberCount(1) == "1 Member")
-        #expect(L10n.commonMemberCount(2) == "2 Members")
-        
-        //  set app language to Italian
-        Bundle.overrideLocalizations = ["it"]
-        
-        #expect(L10n.commonMemberCount(1) == "1 Membro")
-        #expect(L10n.commonMemberCount(2) == "2 Membri")
+        withOverrideLocalizations(["it"]) {
+            #expect(L10n.commonMemberCount(1) == "1 Membro")
+            #expect(L10n.commonMemberCount(2) == "2 Membri")
+        }
     }
     
     /// Test plurals fallback language for a language not supported at all
     @Test
     func pluralsFallbackOnNotSupportedLanguage() {
         //  set app language to something Element don't support at all ("invalid identifier")
-        Bundle.overrideLocalizations = ["xx"]
-        
-        #expect(L10n.commonMemberCount(1) == "1 Member")
-        #expect(L10n.commonMemberCount(2) == "2 Members")
+        withOverrideLocalizations(["xx"]) {
+            #expect(L10n.commonMemberCount(1) == "1 Member")
+            #expect(L10n.commonMemberCount(2) == "2 Members")
+        }
     }
     
     /// Test untranslated strings
@@ -85,33 +95,42 @@ final class LocalizationTests {
     /// Test the Untranslated table resolves in the device language when translated
     @Test
     func untranslatedResolvesInDeviceLanguage() {
-        Bundle.overrideLocalizations = ["vi"]
+        withOverrideLocalizations(["vi"]) {
+            #expect(UntranslatedL10n.screenFriendsTitle == "Bạn bè")
+        }
         
-        #expect(UntranslatedL10n.screenFriendsTitle == "Bạn bè")
-        
-        Bundle.overrideLocalizations = ["ja"]
-        
-        #expect(UntranslatedL10n.screenFriendsTitle == "フレンド")
+        withOverrideLocalizations(["ja"]) {
+            #expect(UntranslatedL10n.screenFriendsTitle == "フレンド")
+        }
     }
     
     /// Test the Untranslated table falls back to English when the language doesn't translate the key
     @Test
     func untranslatedFallsBackToEnglishWhenLanguageTableMissing() {
         // Vietnamese ships a table but only for the fork's own keys
-        Bundle.overrideLocalizations = ["vi"]
-        #expect(UntranslatedL10n.untranslated == "Untranslated")
+        withOverrideLocalizations(["vi"]) {
+            #expect(UntranslatedL10n.untranslated == "Untranslated")
+        }
         
         // French ships no Untranslated table at all
-        Bundle.overrideLocalizations = ["fr"]
-        #expect(UntranslatedL10n.screenFriendsTitle == "Friends")
-        // en fallback must forward format args (plurals go through tr with an arg)
-        #expect(UntranslatedL10n.untranslatedPlural(5) == "5 untranslated items")
+        withOverrideLocalizations(["fr"]) {
+            #expect(UntranslatedL10n.screenFriendsTitle == "Friends")
+            // en fallback must forward format args (plurals go through tr with an arg)
+            #expect(UntranslatedL10n.untranslatedPlural(5) == "5 untranslated items")
+        }
     }
     
-    /// Test untranslated strings default to English on an English device
+    /// Test untranslated strings default to English when the OS language isn't overridden by
+    /// the test itself. Hermetic: the suite pins the device language instead of relying on
+    /// the machine resolving to English.
     @Test
     func untranslatedDefaultsToEnglish() {
+        Self.overridesLock.lock()
+        defer { Self.overridesLock.unlock() }
+        
         Bundle.overrideLocalizations = nil
+        Bundle.overridePreferredLocalizations = ["en"]
+        defer { Bundle.overridePreferredLocalizations = nil }
         
         #expect(UntranslatedL10n.screenFriendsTitle == "Friends")
     }

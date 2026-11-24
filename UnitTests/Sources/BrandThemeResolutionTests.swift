@@ -58,39 +58,55 @@ final class BrandThemeResolutionTests {
     
     // MARK: - Localized picker labels
     
+    /// Serialises tests that mutate the process-wide localisation overrides: Swift Testing
+    /// runs suites concurrently and the overrides are `nonisolated(unsafe)` globals shared
+    /// with LocalizationTests and LanguageSettingsTests.
+    private static let overridesLock = NSLock()
+    
+    private func withOverrideLocalizations(_ languages: [String], _ body: () -> Void) {
+        Self.overridesLock.lock()
+        defer { Self.overridesLock.unlock() }
+        
+        Bundle.overrideLocalizations = languages
+        body()
+        Bundle.overrideLocalizations = nil
+    }
+    
     /// The Automatic option and theme labels are translated in the Untranslated tables.
     @Test
     func localizedPickerLabels() {
-        Bundle.overrideLocalizations = ["en"]
-        #expect(BrandTheme.automaticOptionName == "Automatic (by language)")
-        #expect(BrandTheme.defaultTheme.localizedName == "Default")
-        #expect(BrandTheme.z.localizedName == "Z theme")
-        #expect(BrandTheme.l.localizedName == "L theme")
+        withOverrideLocalizations(["en"]) {
+            #expect(BrandTheme.automaticOptionName == "Automatic (by language)")
+            #expect(BrandTheme.defaultTheme.localizedName == "Default")
+            #expect(BrandTheme.z.localizedName == "Z theme")
+            #expect(BrandTheme.l.localizedName == "L theme")
+        }
         
-        Bundle.overrideLocalizations = ["vi"]
-        #expect(BrandTheme.automaticOptionName == "Tự động (theo ngôn ngữ)")
-        #expect(BrandTheme.z.localizedName == "Giao diện Z")
+        withOverrideLocalizations(["vi"]) {
+            #expect(BrandTheme.automaticOptionName == "Tự động (theo ngôn ngữ)")
+            #expect(BrandTheme.z.localizedName == "Giao diện Z")
+        }
         
-        Bundle.overrideLocalizations = ["ja"]
-        #expect(BrandTheme.automaticOptionName == "自動（言語に合わせる）")
-        #expect(BrandTheme.l.localizedName == "Lテーマ")
-        
-        Bundle.overrideLocalizations = nil
+        withOverrideLocalizations(["ja"]) {
+            #expect(BrandTheme.automaticOptionName == "自動（言語に合わせる）")
+            #expect(BrandTheme.l.localizedName == "Lテーマ")
+        }
     }
     
     /// The friend-request display label is localized while the wire body stays English.
     @Test
     func friendRequestDisplayLabelPerLanguage() {
-        Bundle.overrideLocalizations = ["en"]
-        #expect(UntranslatedL10n.friendRequestDisplayBody == "👋 Friend request")
+        withOverrideLocalizations(["en"]) {
+            #expect(UntranslatedL10n.friendRequestDisplayBody == "👋 Friend request")
+        }
         
-        Bundle.overrideLocalizations = ["vi"]
-        #expect(UntranslatedL10n.friendRequestDisplayBody == "👋 Lời mời kết bạn")
+        withOverrideLocalizations(["vi"]) {
+            #expect(UntranslatedL10n.friendRequestDisplayBody == "👋 Lời mời kết bạn")
+        }
         
-        Bundle.overrideLocalizations = ["ja"]
-        #expect(UntranslatedL10n.friendRequestDisplayBody == "👋 フレンド申請")
-        
-        Bundle.overrideLocalizations = nil
+        withOverrideLocalizations(["ja"]) {
+            #expect(UntranslatedL10n.friendRequestDisplayBody == "👋 フレンド申請")
+        }
         
         // The sent body is unchanged for interoperability.
         #expect(FriendsService.friendRequestBody == "👋 Friend request")
@@ -100,18 +116,19 @@ final class BrandThemeResolutionTests {
     
     @Test
     func readIndicatorLabelsPerLanguage() {
-        Bundle.overrideLocalizations = ["en"]
-        #expect(UntranslatedL10n.readIndicatorRead == "Read")
-        #expect(UntranslatedL10n.readIndicatorReadFormat(3) == "Read 3")
+        withOverrideLocalizations(["en"]) {
+            #expect(UntranslatedL10n.readIndicatorRead == "Read")
+            #expect(UntranslatedL10n.readIndicatorReadFormat(3) == "Read 3")
+        }
         
-        Bundle.overrideLocalizations = ["vi"]
-        #expect(UntranslatedL10n.readIndicatorRead == "Đã xem")
-        #expect(UntranslatedL10n.readIndicatorReadFormat(3) == "Đã xem 3")
+        withOverrideLocalizations(["vi"]) {
+            #expect(UntranslatedL10n.readIndicatorRead == "Đã xem")
+            #expect(UntranslatedL10n.readIndicatorReadFormat(3) == "Đã xem 3")
+        }
         
-        Bundle.overrideLocalizations = ["ja"]
-        #expect(UntranslatedL10n.readIndicatorRead == "既読")
-        #expect(UntranslatedL10n.readIndicatorReadFormat(3) == "既読 3")
-        
-        Bundle.overrideLocalizations = nil
+        withOverrideLocalizations(["ja"]) {
+            #expect(UntranslatedL10n.readIndicatorRead == "既読")
+            #expect(UntranslatedL10n.readIndicatorReadFormat(3) == "既読 3")
+        }
     }
 }

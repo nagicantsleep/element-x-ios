@@ -23,11 +23,22 @@ public nonisolated extension Bundle {
         return bundle
     }
     
+    /// The effective localizations: the test override when set, otherwise the receiver's own.
+    var effectivePreferredLocalizations: [String] {
+        Self.overridePreferredLocalizations ?? preferredLocalizations
+    }
+    
     // MARK: - Localisation
     
     /// Overrides `Bundle.app.preferredLocalizations` for testing translations since this is
     /// only for testing, and is changed at runtime only in tests, it's fine to keep as `nonisolated(unsafe)`
     nonisolated(unsafe) static var overrideLocalizations: [String]?
+    
+    /// Overrides `preferredLocalizations` resolution (both on `Bundle.app` and on the bundles
+    /// handed to `LanguageSettingsStore`), so tests can pin the effective OS language instead of
+    /// depending on the machine the suite runs on. Only honoured when `overrideLocalizations`
+    /// is `nil` so the two knobs never fight.
+    nonisolated(unsafe) static var overridePreferredLocalizations: [String]?
     
     private static let cachedBundles = Mutex<[String: Bundle]>([:])
     

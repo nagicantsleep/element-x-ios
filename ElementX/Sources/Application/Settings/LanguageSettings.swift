@@ -64,7 +64,7 @@ nonisolated enum LanguageSettingsStore {
             return stored
         }
         
-        if let resolvedIdentifier = bundle.preferredLocalizations.first,
+        if let resolvedIdentifier = bundle.effectivePreferredLocalizations.first,
            let resolved = LanguageSetting(identifier: resolvedIdentifier) {
             return resolved
         }
@@ -97,7 +97,7 @@ nonisolated enum LanguageSettingsStore {
             return storedOverride(defaults: defaults, appDomainName: appDomainName) != nil
         }
         
-        let effectiveIdentifier = bundle.preferredLocalizations.first ?? ""
+        let effectiveIdentifier = bundle.effectivePreferredLocalizations.first ?? ""
         guard let pickedCode = picked.languageCode else { return false }
         
         return primaryLanguageCode(of: pickedCode) != primaryLanguageCode(of: effectiveIdentifier)

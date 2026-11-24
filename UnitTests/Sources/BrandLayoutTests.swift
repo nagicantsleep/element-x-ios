@@ -22,23 +22,22 @@ final class BrandLayoutTests {
             return
         }
         
-        expectResolvedEqual(UIColor(color), BrandTheme.uiColor(light), sourceLocation: sourceLocation)
-        expectResolvedEqual(UIColor(color), BrandTheme.uiColor(dark), sourceLocation: sourceLocation)
+        // A dynamic colour resolves to its light variant under light traits and its dark variant
+        // under dark traits; the fixed hexes are matched trait-for-trait.
+        expectResolvedEqual(UIColor(color), BrandTheme.uiColor(light), traits: UITraitCollection(userInterfaceStyle: .light), sourceLocation: sourceLocation)
+        expectResolvedEqual(UIColor(color), BrandTheme.uiColor(dark), traits: UITraitCollection(userInterfaceStyle: .dark), sourceLocation: sourceLocation)
     }
     
-    private func expectResolvedEqual(_ color: UIColor?, _ expected: UIColor,
+    private func expectResolvedEqual(_ color: UIColor?, _ expected: UIColor, traits: UITraitCollection,
                                      sourceLocation: SourceLocation = #_sourceLocation) {
-        for style in [UIUserInterfaceStyle.light, .dark] {
-            let traits = UITraitCollection(userInterfaceStyle: style)
-            guard let color,
-                  let rgba = color.resolvedColor(with: traits).rgbaComponents(),
-                  let expectedRgba = expected.resolvedColor(with: traits).rgbaComponents() else {
-                Issue.record("Couldn't resolve colour for \(style == .light ? "light" : "dark")", sourceLocation: sourceLocation)
-                return
-            }
-            
-            #expect(rgba == expectedRgba, sourceLocation: sourceLocation)
+        guard let color,
+              let rgba = color.resolvedColor(with: traits).rgbaComponents(),
+              let expectedRgba = expected.resolvedColor(with: traits).rgbaComponents() else {
+            Issue.record("Couldn't resolve colour", sourceLocation: sourceLocation)
+            return
         }
+        
+        #expect(rgba == expectedRgba, sourceLocation: sourceLocation)
     }
     
     @Test
@@ -101,8 +100,8 @@ final class BrandLayoutTests {
 }
 
 private extension UIColor {
-    /// RGBA in extension sRGB space, quantised for stable equality across colour spaces.
-    func rgbaComponents() -> (red: Int, green: Int, blue: Int, alpha: Int)? {
+    /// Quantised 8-bit RGBA components for stable equality across colour spaces.
+    func rgbaComponents() -> [Int]? {
         var red: CGFloat = 0
         var green: CGFloat = 0
         var blue: CGFloat = 0
@@ -122,6 +121,6 @@ private extension UIColor {
             return nil
         }
         
-        return (Int((red * 255).rounded()), Int((green * 255).rounded()), Int((blue * 255).rounded()), Int((alpha * 255).rounded()))
+        return [red, green, blue, alpha].map { Int(($0 * 255).rounded()) }
     }
 }

@@ -41,10 +41,6 @@ struct BrandHomeHeaderView: View {
             HStack(spacing: 12) {
                 AnyView(settingsButton)
                 
-                Text(title)
-                    .font(.compound.headingLGBold)
-                    .foregroundColor(.white)
-                
                 Spacer()
                 
                 Button {

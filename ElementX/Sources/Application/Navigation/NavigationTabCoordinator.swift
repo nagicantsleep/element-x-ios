@@ -367,8 +367,16 @@ private struct NavigationTabCoordinatorView<Tag: Hashable>: View {
     @State private var railVisibility = TabRailVisibility()
     @State private var railBackgroundColor: Color = .compound.bgCanvasDefault
     
+    /// ADR 0016: the selected tab is tinted with the brand accent; `nil` keeps the stock accent
+    /// (Default theme). Applied as a SwiftUI `tint` because iOS 26's glass tab bar ignores
+    /// `UITabBarAppearance.tintColor`.
+    private var brandTint: Color? {
+        navigationTabCoordinator.tabModules.first?.details.brandAccentColour.map { Color(uiColor: $0) }
+    }
+    
     var body: some View {
         tabView
+            .tint(brandTint)
             .environment(\.tabViewHorizontalSizeClass, horizontalSizeClass)
             .sheet(item: $navigationTabCoordinator.sheetModule) { module in
                 module.coordinator?.toPresentable()
@@ -525,7 +533,8 @@ struct TabRailView<Tag: Hashable>: View {
                             CompoundIcon(isSelected ? module.details.selectedIcon : module.details.icon)
                         }
                     }
-                    .buttonStyle(TabButtonStyle(isSelected: isSelected))
+                    .buttonStyle(TabButtonStyle(isSelected: isSelected,
+                                                brandAccentColour: module.details.brandAccentColour))
                     .accessibilityAddTraits(isSelected ? .isSelected : [])
                     .badge(10) // TODO: Check if this works.
                 }
@@ -543,15 +552,25 @@ struct TabRailView<Tag: Hashable>: View {
     
     struct TabButtonStyle: ButtonStyle {
         let isSelected: Bool
+        /// ADR 0016: the selected rail tab shows the brand accent; `nil` keeps the stock icon colour.
+        var brandAccentColour: UIColor?
         
         func makeBody(configuration: Configuration) -> some View {
             configuration.label
                 .labelStyle(.iconOnly)
-                .foregroundStyle(.compound.iconPrimary)
+                .foregroundStyle(selectedForeground)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
                 .background(capsuleColor(isPressed: configuration.isPressed), in: .capsule)
                 .contentShape(.capsule)
+        }
+        
+        private var selectedForeground: Color {
+            guard isSelected, let brandAccentColour else {
+                return .compound.iconPrimary
+            }
+            
+            return Color(uiColor: brandAccentColour)
         }
         
         func capsuleColor(isPressed: Bool) -> Color {

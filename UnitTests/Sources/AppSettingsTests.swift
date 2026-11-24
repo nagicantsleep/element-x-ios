@@ -46,9 +46,10 @@ struct AppSettingsTests {
         #expect(appSettings.effectiveBrandTheme == .defaultTheme)
         
         appSettings.brandThemeChoice = nil
-        // Automatic: the test host runs in English, so it resolves to Default.
-        let language = Bundle.app.preferredLocalizations.first ?? "en"
-        #expect(appSettings.effectiveBrandTheme == BrandTheme.resolve(choice: nil, preferredLocalization: language))
+        // Automatic: resolve against a pinned language so the assertion holds on any machine.
+        Bundle.overridePreferredLocalizations = ["en"]
+        defer { Bundle.overridePreferredLocalizations = nil }
+        #expect(appSettings.effectiveBrandTheme == BrandTheme.resolve(choice: nil, preferredLocalization: "en"))
     }
     
     /// A legacy `brandTheme` value stored before ADR 0016 migrates into the optional choice.

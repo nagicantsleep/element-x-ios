@@ -148,7 +148,7 @@ nonisolated extension UntranslatedL10n {
     // Untranslated tables are only shipped for a subset of languages, so walk the user's
     // preferred localizations (overridable in tests) and fall back to the English bundle
     // when none of them provides a translation for the key.
-    let languages = Bundle.overrideLocalizations ?? Bundle.app.preferredLocalizations
+    let languages = Bundle.overrideLocalizations ?? Bundle.app.effectivePreferredLocalizations
 
     for language in languages {
       if let translation = trIn(language, table, key, args) {
