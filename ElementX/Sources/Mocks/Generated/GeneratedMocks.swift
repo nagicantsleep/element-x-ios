@@ -5816,32 +5816,32 @@ nonisolated class JoinedRoomProxyMock: JoinedRoomProxyProtocol, @unchecked Senda
     }
     nonisolated(unsafe) var underlyingOwnUserID: String!
 
-    //MARK: - latestMessageInfo
+    //MARK: - latestMessageMarker
 
-    private let latestMessageInfoCallsCountLock = NSLock()
-    private nonisolated(unsafe) var latestMessageInfoUnderlyingCallsCount = 0
-    var latestMessageInfoCallsCount: Int {
-        get { latestMessageInfoCallsCountLock.withLock { latestMessageInfoUnderlyingCallsCount } }
-        set { latestMessageInfoCallsCountLock.withLock { latestMessageInfoUnderlyingCallsCount = newValue } }
+    private let latestMessageMarkerCallsCountLock = NSLock()
+    private nonisolated(unsafe) var latestMessageMarkerUnderlyingCallsCount = 0
+    var latestMessageMarkerCallsCount: Int {
+        get { latestMessageMarkerCallsCountLock.withLock { latestMessageMarkerUnderlyingCallsCount } }
+        set { latestMessageMarkerCallsCountLock.withLock { latestMessageMarkerUnderlyingCallsCount = newValue } }
     }
-    var latestMessageInfoCalled: Bool {
-        return latestMessageInfoCallsCount > 0
+    var latestMessageMarkerCalled: Bool {
+        return latestMessageMarkerCallsCount > 0
     }
 
-    private let latestMessageInfoReturnValueLock = NSLock()
-    private nonisolated(unsafe) var latestMessageInfoUnderlyingReturnValue: (sender: String, msgType: String)?
-    var latestMessageInfoReturnValue: (sender: String, msgType: String)? {
-        get { latestMessageInfoReturnValueLock.withLock { latestMessageInfoUnderlyingReturnValue } }
-        set { latestMessageInfoReturnValueLock.withLock { latestMessageInfoUnderlyingReturnValue = newValue } }
+    private let latestMessageMarkerReturnValueLock = NSLock()
+    private nonisolated(unsafe) var latestMessageMarkerUnderlyingReturnValue: (sender: String, marker: MatrixRustSDK.MessageType)?
+    var latestMessageMarkerReturnValue: (sender: String, marker: MatrixRustSDK.MessageType)? {
+        get { latestMessageMarkerReturnValueLock.withLock { latestMessageMarkerUnderlyingReturnValue } }
+        set { latestMessageMarkerReturnValueLock.withLock { latestMessageMarkerUnderlyingReturnValue = newValue } }
     }
-    nonisolated(unsafe) var latestMessageInfoClosure: (() async -> (sender: String, msgType: String)?)?
+    nonisolated(unsafe) var latestMessageMarkerClosure: (() async -> (sender: String, marker: MatrixRustSDK.MessageType)?)?
 
-    @concurrent func latestMessageInfo() async -> (sender: String, msgType: String)? {
-        latestMessageInfoCallsCountLock.withLock { latestMessageInfoUnderlyingCallsCount += 1 }
-        if let latestMessageInfoClosure = latestMessageInfoClosure {
-            return await latestMessageInfoClosure()
+    @concurrent func latestMessageMarker() async -> (sender: String, marker: MatrixRustSDK.MessageType)? {
+        latestMessageMarkerCallsCountLock.withLock { latestMessageMarkerUnderlyingCallsCount += 1 }
+        if let latestMessageMarkerClosure = latestMessageMarkerClosure {
+            return await latestMessageMarkerClosure()
         } else {
-            return latestMessageInfoReturnValue
+            return latestMessageMarkerReturnValue
         }
     }
     //MARK: - subscribeForUpdates
@@ -14293,48 +14293,6 @@ nonisolated class TimelineProxyMock: TimelineProxyProtocol, @unchecked Sendable 
             return await sendMessageEventContentClosure(messageContent)
         } else {
             return sendMessageEventContentReturnValue
-        }
-    }
-    //MARK: - sendMessage
-
-    private let sendMessageMsgTypeBodyCallsCountLock = NSLock()
-    private nonisolated(unsafe) var sendMessageMsgTypeBodyUnderlyingCallsCount = 0
-    var sendMessageMsgTypeBodyCallsCount: Int {
-        get { sendMessageMsgTypeBodyCallsCountLock.withLock { sendMessageMsgTypeBodyUnderlyingCallsCount } }
-        set { sendMessageMsgTypeBodyCallsCountLock.withLock { sendMessageMsgTypeBodyUnderlyingCallsCount = newValue } }
-    }
-    var sendMessageMsgTypeBodyCalled: Bool {
-        return sendMessageMsgTypeBodyCallsCount > 0
-    }
-    private let sendMessageMsgTypeBodyReceivedArgumentsLock = NSLock()
-    private nonisolated(unsafe) var sendMessageMsgTypeBodyUnderlyingReceivedArguments: (msgType: String, body: String)?
-    var sendMessageMsgTypeBodyReceivedArguments: (msgType: String, body: String)? {
-        get { sendMessageMsgTypeBodyReceivedArgumentsLock.withLock { sendMessageMsgTypeBodyUnderlyingReceivedArguments } }
-        set { sendMessageMsgTypeBodyReceivedArgumentsLock.withLock { sendMessageMsgTypeBodyUnderlyingReceivedArguments = newValue } }
-    }
-    private let sendMessageMsgTypeBodyReceivedInvocationsLock = NSLock()
-    private nonisolated(unsafe) var sendMessageMsgTypeBodyUnderlyingReceivedInvocations: [(msgType: String, body: String)] = []
-    var sendMessageMsgTypeBodyReceivedInvocations: [(msgType: String, body: String)] {
-        get { sendMessageMsgTypeBodyReceivedInvocationsLock.withLock { sendMessageMsgTypeBodyUnderlyingReceivedInvocations } }
-        set { sendMessageMsgTypeBodyReceivedInvocationsLock.withLock { sendMessageMsgTypeBodyUnderlyingReceivedInvocations = newValue } }
-    }
-
-    private let sendMessageMsgTypeBodyReturnValueLock = NSLock()
-    private nonisolated(unsafe) var sendMessageMsgTypeBodyUnderlyingReturnValue: Result<Void, TimelineProxyError>!
-    var sendMessageMsgTypeBodyReturnValue: Result<Void, TimelineProxyError>! {
-        get { sendMessageMsgTypeBodyReturnValueLock.withLock { sendMessageMsgTypeBodyUnderlyingReturnValue } }
-        set { sendMessageMsgTypeBodyReturnValueLock.withLock { sendMessageMsgTypeBodyUnderlyingReturnValue = newValue } }
-    }
-    nonisolated(unsafe) var sendMessageMsgTypeBodyClosure: ((String, String) async -> Result<Void, TimelineProxyError>)?
-
-    @concurrent func sendMessage(msgType: String, body: String) async -> Result<Void, TimelineProxyError> {
-        sendMessageMsgTypeBodyCallsCountLock.withLock { sendMessageMsgTypeBodyUnderlyingCallsCount += 1 }
-        sendMessageMsgTypeBodyReceivedArguments = (msgType: msgType, body: body)
-        sendMessageMsgTypeBodyReceivedInvocationsLock.withLock { sendMessageMsgTypeBodyUnderlyingReceivedInvocations.append((msgType: msgType, body: body)) }
-        if let sendMessageMsgTypeBodyClosure = sendMessageMsgTypeBodyClosure {
-            return await sendMessageMsgTypeBodyClosure(msgType, body)
-        } else {
-            return sendMessageMsgTypeBodyReturnValue
         }
     }
     //MARK: - sendMessage

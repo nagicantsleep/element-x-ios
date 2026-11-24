@@ -143,7 +143,11 @@ nonisolated struct RoomTimelineItemFactory: RoomTimelineItemFactoryProtocol {
         case .notice(let content):
             .notice(buildNoticeTimelineItemContent(content))
         case .text(let content):
-            .text(buildTextTimelineItemContent(content))
+            // ADR 0016: wire v2 friend-request markers are `m.text` with a custom format; render
+            // the localized label as plain text, never the formatted body as HTML.
+            .text(MessageType.text(content: content).isFriendRequestMarker
+                ? .init(body: UntranslatedL10n.friendRequestDisplayBody)
+                : buildTextTimelineItemContent(content))
         case .video(let content):
             .video(buildVideoTimelineItemContent(content))
         case .location(let content):
@@ -151,10 +155,10 @@ nonisolated struct RoomTimelineItemFactory: RoomTimelineItemFactoryProtocol {
         case .gallery(let content):
             .gallery(buildGalleryTimelineItemContent(content, timelineItemID: .randomEvent))
         case .other(let msgtype, let body):
-            // ADR 0016: `m.friend_request` markers render with a localized display label; the
-            // sent body stays English for interoperability. RoomTimelineItemFactory is main-app
-            // only, so FriendsService and UntranslatedL10n resolve here.
-            .text(.init(body: msgtype == FriendsService.friendRequestMsgType
+            // ADR 0016: legacy `m.friend_request` markers render with a localized display label;
+            // the sent body stays English for interoperability. RoomTimelineItemFactory is
+            // main-app only, so FriendsService and UntranslatedL10n resolve here.
+            .text(.init(body: msgtype == friendRequestMarkerMsgType
                     ? UntranslatedL10n.friendRequestDisplayBody
                     : body))
         case .none:

@@ -145,17 +145,16 @@ class JoinedRoomProxy: JoinedRoomProxyProtocol {
         })
     }
     
-    func latestMessageInfo() async -> (sender: String, msgType: String)? {
+    func latestMessageMarker() async -> (sender: String, marker: MatrixRustSDK.MessageType)? {
         let latestEvent = await room.latestEvent()
         
         guard case let .remote(_, sender, _, _, content) = latestEvent,
               case let .msgLike(msgLike) = content,
-              case let .message(messageContent) = msgLike.kind,
-              case let .other(msgtype, _) = messageContent.msgType else {
+              case let .message(messageContent) = msgLike.kind else {
             return nil
         }
         
-        return (sender, msgtype)
+        return (sender, messageContent.msgType)
     }
     
     func timelineFocusedOnEvent(eventID: String, numberOfEvents: UInt16) async -> Result<TimelineProxyProtocol, RoomProxyError> {
@@ -807,8 +806,10 @@ class JoinedRoomProxy: JoinedRoomProxyProtocol {
         }
     }
     
-    /// Excludes membership/state noise; message events (including `m.friend_request` custom
-    /// msgtypes) are delivered for rendering in the timeline and room list preview.
+    /// Excludes membership/state noise. The SDK's default event filter has already dropped
+    /// `m.room.message` events with unknown msgtypes (e.g. the legacy `m.friend_request` marker;
+    /// wire v2 instead marks them as `m.text` with a custom format, ADR 0016); whatever arrives
+    /// here is delivered for rendering in the timeline and room list preview.
     private static let excludedEventsFilter: TimelineEventFilter = {
         var stateEventFilters: [TimelineEventType] = [.roomCanonicalAlias,
                                                       .roomGuestAccess,

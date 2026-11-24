@@ -75,9 +75,10 @@ protocol JoinedRoomProxyProtocol: RoomProxyProtocol {
     
     var timeline: TimelineProxyProtocol { get }
     
-    /// The sender and `m.room.message` msgtype of the room's latest message when it uses a custom
-    /// msgtype (e.g. the Friends request marker), `nil` for standard msgtypes or non-message events.
-    func latestMessageInfo() async -> (sender: String, msgType: String)?
+    /// The sender and full `m.room.message` content of the room's latest message, `nil` for
+    /// non-message events. Returns the SDK `MessageType` so callers can detect friend-request
+    /// markers by `MessageType.isFriendRequestMarker` (legacy msgtype or wire v2 format).
+    func latestMessageMarker() async -> (sender: String, marker: MatrixRustSDK.MessageType)?
     
     var predecessorRoom: PredecessorRoom? { get }
     

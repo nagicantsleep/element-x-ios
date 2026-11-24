@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import MatrixRustSDK
 
 // MARK: - Model
 
@@ -58,8 +59,8 @@ protocol FriendsServiceProtocol {
     func accept(userID: String) async -> Result<Void, FriendsError>
     /// Cancels an outgoing request or removes an existing friend, both locally and server side.
     func remove(userID: String) async -> Result<Void, FriendsError>
-    /// Scans the DM rooms' latest messages for `m.friend_request` markers (web-originated
-    /// requests) and records them as incoming requests.
+    /// Scans the DM rooms' latest messages for friend-request markers (web-originated requests,
+    /// detected by `MessageType.isFriendRequestMarker`) and records them as incoming requests.
     func observeIncomingRequests() async
 }
 
@@ -150,15 +151,15 @@ final class FriendsService: FriendsServiceProtocol {
     func observeIncomingRequests() async {
         for summary in clientProxy.staticRoomSummaryProvider.roomListPublisher.value where summary.isDirect {
             guard case let .joined(roomProxy) = await clientProxy.roomForIdentifier(summary.id),
-                  let latest = await roomProxy.latestMessageInfo(),
-                  latest.msgType == Self.friendRequestMsgType,
-                  latest.sender != clientProxy.userID else {
+                  let (sender, marker) = await roomProxy.latestMessageMarker(),
+                  marker.isFriendRequestMarker,
+                  sender != clientProxy.userID else {
                 continue
             }
             
             guard case .success(var localState) = await readLocalState() else { continue }
             
-            if Self.processObservedMarker(sender: latest.sender,
+            if Self.processObservedMarker(sender: sender,
                                           ownUserID: clientProxy.userID,
                                           localRequests: &localState.requests,
                                           timestamp: Date().timeIntervalSince1970 * 1000) {
@@ -353,7 +354,10 @@ final class FriendsService: FriendsServiceProtocol {
     
     // MARK: DM marker (web interop)
     
-    /// Sends the `m.friend_request` DM marker so web clients can observe the request.
+    /// Sends the friend-request DM marker so web clients can observe the request. Wire v2 (ADR
+    /// 0016): an `m.text` carrying the custom `io.nagi.friend_request` formatted-body format —
+    /// the SDK's default event filter drops unknown msgtypes, so a `m.friend_request` marker
+    /// would never reach Element X's timeline. Web detects both shapes.
     private func sendDMMarker(userID: String) async -> Result<Void, FriendsError> {
         let roomID: String?
         switch clientProxy.directRoomForUserID(userID) {
@@ -379,18 +383,28 @@ final class FriendsService: FriendsServiceProtocol {
             return .failure(.network)
         }
         
-        return await roomProxy.timeline.sendMessage(msgType: Self.friendRequestMsgType,
-                                                    body: Self.friendRequestBody).mapError { _ in .network }
+        // Built through the FFI message content builder: `messageEventContentNew` maps the SDK
+        // `MessageType` (here `m.text` with the custom marker format) to the wire content.
+        let content: RoomMessageEventContentWithoutRelation
+        do {
+            content = try messageEventContentNew(msgtype: .text(content: .init(body: Self.markerBody,
+                                                                               formatted: .init(format: .unknown(format: Self.markerFormat),
+                                                                                                body: Self.markerBody))))
+        } catch {
+            MXLog.error("Failed building the friend-request marker content: \(error)")
+            return .failure(.network)
+        }
+        return await roomProxy.timeline.sendMessageEventContent(content).mapError { _ in .network }
     }
     
     // MARK: Constants & helpers
     
     static let friendListEventType = "m.friend_list"
     static let friendRequestsEventType = "m.friend_requests"
-    /// `nonisolated` so timeline rendering (nonisolated contexts) can compare msgtypes without
-    /// hopping to the main actor.
-    nonisolated static let friendRequestMsgType = "m.friend_request"
-    nonisolated static let friendRequestBody = "👋 Friend request"
+    /// Wire v2 marker shape (ADR 0016): `m.text` with this custom format in the formatted body.
+    /// Legacy `m.friend_request` msgtype markers from web are still detected on read.
+    nonisolated static let markerFormat = friendRequestMarkerFormat
+    nonisolated static let markerBody = "👋 Friend request"
     
     private static let listPath = "/_synapse/client/friends"
     private static let requestsPath = "/_synapse/client/friends/requests"

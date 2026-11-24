@@ -6,6 +6,7 @@
 //
 
 @testable import ElementX
+import MatrixRustSDK
 import Testing
 
 @MainActor
@@ -86,6 +87,41 @@ struct FriendsServiceTests {
         #expect(recorded)
         #expect(requests.count == 2)
         #expect(requests["@carol:example.org"]?.displayName == "Carol")
+    }
+    
+    // MARK: - Marker detection (wire v2, ADR 0016)
+    
+    /// Wire v2: `m.text` carrying the custom format in the formatted body. This is the shape the
+    /// app itself sends; it must be detected despite the unknown format.
+    @Test
+    func wireV2TextMarkerIsDetected() {
+        let marker = MatrixRustSDK.MessageType.text(content: .init(body: FriendsService.markerBody,
+                                                                   formatted: .init(format: .unknown(format: FriendsService.markerFormat),
+                                                                                    body: FriendsService.markerBody)))
+        #expect(marker.isFriendRequestMarker)
+        
+        // Any other custom format is an ordinary formatted message, not a marker.
+        let otherFormat = MatrixRustSDK.MessageType.text(content: .init(body: "hello",
+                                                                        formatted: .init(format: .unknown(format: "org.example.custom"),
+                                                                                         body: "<b>hello</b>")))
+        #expect(!otherFormat.isFriendRequestMarker)
+    }
+    
+    /// The legacy `m.friend_request` msgtype (still sent by web) stays detected.
+    @Test
+    func legacyMsgTypeMarkerIsDetected() {
+        let marker = MatrixRustSDK.MessageType.other(msgtype: "m.friend_request", body: FriendsService.markerBody)
+        #expect(marker.isFriendRequestMarker)
+        
+        #expect(!MatrixRustSDK.MessageType.other(msgtype: "m.custom_other", body: "hi").isFriendRequestMarker)
+    }
+    
+    /// Plain and HTML formatted texts are never markers.
+    @Test
+    func ordinaryTextIsNotDetected() {
+        #expect(!MatrixRustSDK.MessageType.text(content: .init(body: "👋 Friend request", formatted: nil)).isFriendRequestMarker)
+        #expect(!MatrixRustSDK.MessageType.text(content: .init(body: "👋 Friend request",
+                                                               formatted: .init(format: .html, body: "👋 Friend request"))).isFriendRequestMarker)
     }
     
     // MARK: - Account data shapes

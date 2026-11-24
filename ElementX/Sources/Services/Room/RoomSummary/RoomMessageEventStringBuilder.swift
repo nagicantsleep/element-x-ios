@@ -9,10 +9,30 @@
 import Foundation
 import MatrixRustSDK
 
-/// Wire marker msgtype for friend requests, mirroring `FriendsService.friendRequestMsgType`. A
-/// file-local constant because this file is also compiled into the NSE target, which doesn't
-/// include the friends feature (ADR 0016).
-private nonisolated let friendRequestMsgType = "m.friend_request"
+/// Wire constants for friend-request DM markers (ADR 0016), file-local to this file because it is
+/// also compiled into the NSE target, which doesn't include the friends feature. Web still sends
+/// the legacy `m.friend_request` msgtype; wire v2 instead sends `m.text` with the custom
+/// `io.nagi.friend_request` formatted-body format, because the Rust SDK's default event filter
+/// drops unknown msgtypes before they ever reach the timeline.
+nonisolated let friendRequestMarkerMsgType = "m.friend_request"
+nonisolated let friendRequestMarkerFormat = "io.nagi.friend_request"
+
+/// The one friend-request detection rule used by every site (timeline render, room list preview,
+/// notification content, incoming-request observer): a legacy `m.friend_request` msgtype or a wire
+/// v2 `m.text` carrying the marker format, which the FFI delivers as `MessageFormat.unknown`.
+nonisolated extension MessageType {
+    var isFriendRequestMarker: Bool {
+        switch self {
+        case .other(let msgtype, _):
+            return msgtype == friendRequestMarkerMsgType
+        case .text(let content):
+            guard case let .unknown(format) = content.formatted?.format else { return false }
+            return format == friendRequestMarkerFormat
+        default:
+            return false
+        }
+    }
+}
 
 nonisolated struct RoomMessageEventStringBuilder {
     enum Style {
@@ -64,8 +84,12 @@ nonisolated struct RoomMessageEventStringBuilder {
             } else {
                 message = AttributedString(content.body)
             }
-        case .text(content: let content):
-            if let attributedMessage = attributedMessageFrom(formattedBody: content.formatted) {
+        case .text(let content):
+            // ADR 0016: wire v2 friend-request markers are `m.text` with a custom format; render
+            // the localized label as plain text, never the formatted body as HTML.
+            if MessageType.text(content: content).isFriendRequestMarker {
+                message = AttributedString(localizedFriendRequestLabel())
+            } else if let attributedMessage = attributedMessageFrom(formattedBody: content.formatted) {
                 message = attributedMessage
             } else {
                 message = AttributedString(content.body)
@@ -73,9 +97,9 @@ nonisolated struct RoomMessageEventStringBuilder {
         case .gallery(let content):
             message = buildGalleryMessage(for: style, content: content)
         case .other(let msgtype, let body):
-            // ADR 0016: `m.friend_request` markers render with a localized display label; the
-            // sent body stays English for interoperability.
-            message = AttributedString(msgtype == friendRequestMsgType
+            // ADR 0016: legacy `m.friend_request` markers render with a localized display label;
+            // the sent body stays English for interoperability.
+            message = AttributedString(msgtype == friendRequestMarkerMsgType
                 ? localizedFriendRequestLabel()
                 : body)
         }
@@ -128,7 +152,8 @@ nonisolated struct RoomMessageEventStringBuilder {
     }
     
     /// The localized friend-request label. The main app resolves the Untranslated table; the NSE
-    /// falls back to the English body. Detected by `msgtype: m.friend_request` (ADR 0016).
+    /// falls back to the English body. Markers are detected by `MessageType.isFriendRequestMarker`
+    /// (legacy msgtype or wire v2 format; ADR 0016).
     private func localizedFriendRequestLabel() -> String {
         #if IS_MAIN_APP
         UntranslatedL10n.friendRequestDisplayBody

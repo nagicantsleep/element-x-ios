@@ -152,9 +152,6 @@ protocol TimelineProxyProtocol: Sendable {
     
     func sendMessageEventContent(_ messageContent: RoomMessageEventContentWithoutRelation) async -> Result<Void, TimelineProxyError>
     
-    /// Sends a message with a custom `m.room.message` msgtype, e.g. the Friends request marker.
-    func sendMessage(msgType: String, body: String) async -> Result<Void, TimelineProxyError>
-    
     func sendMessage(_ message: String,
                      html: String?,
                      inReplyToEventID: String?,

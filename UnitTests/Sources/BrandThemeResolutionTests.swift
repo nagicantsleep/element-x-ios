@@ -108,8 +108,9 @@ final class BrandThemeResolutionTests {
             #expect(UntranslatedL10n.friendRequestDisplayBody == "👋 フレンド申請")
         }
         
-        // The sent body is unchanged for interoperability.
-        #expect(FriendsService.friendRequestBody == "👋 Friend request")
+        // The sent wire v2 shape is unchanged for interoperability: custom format + English body.
+        #expect(FriendsService.markerFormat == "io.nagi.friend_request")
+        #expect(FriendsService.markerBody == "👋 Friend request")
     }
     
     // MARK: - Read indicator labels (ADR 0016 knob table)
