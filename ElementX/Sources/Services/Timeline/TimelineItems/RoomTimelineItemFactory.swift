@@ -150,8 +150,13 @@ nonisolated struct RoomTimelineItemFactory: RoomTimelineItemFactoryProtocol {
             .location(buildLocationTimelineItemContent(content))
         case .gallery(let content):
             .gallery(buildGalleryTimelineItemContent(content, timelineItemID: .randomEvent))
-        case .other(_, let body):
-            .text(.init(body: body))
+        case .other(let msgtype, let body):
+            // ADR 0016: `m.friend_request` markers render with a localized display label; the
+            // sent body stays English for interoperability. RoomTimelineItemFactory is main-app
+            // only, so FriendsService and UntranslatedL10n resolve here.
+            .text(.init(body: msgtype == FriendsService.friendRequestMsgType
+                    ? UntranslatedL10n.friendRequestDisplayBody
+                    : body))
         case .none:
             .text(.init(body: L10n.commonUnsupportedEvent))
         }

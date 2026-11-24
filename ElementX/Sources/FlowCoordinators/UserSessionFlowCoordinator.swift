@@ -263,6 +263,8 @@ class UserSessionFlowCoordinator: FlowCoordinatorProtocol {
     }
     
     private func setupObservers() {
+        setupTabBadgeObservers()
+        
         userProfileScreenCoordinator?.actionsPublisher
             .sink { [weak self] action in
                 guard let self else { return }
@@ -375,6 +377,61 @@ class UserSessionFlowCoordinator: FlowCoordinatorProtocol {
                 }
             }
             .store(in: &cancellables)
+    }
+    
+    // MARK: - Tab bar parity (ADR 0016)
+    
+    /// Red count badges on Messages (rooms with unread content) and Contacts (pending friend
+    /// requests/invites), and the selected tab tinted with the brand accent — matching Android's
+    /// `HomeNavigationBar`.
+    private func setupTabBadgeObservers() {
+        userSession.clientProxy.roomSummaryProvider.roomListPublisher
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] rooms in
+                guard let self else { return }
+                // The dot/badge semantics match the room list: invites and marked-unread count
+                // even when muted, plus plain unread messages.
+                let unreadCount = rooms.filter {
+                    $0.hasUnreadMessages || $0.hasUnreadNotifications || $0.hasUnreadMentions || $0.isMarkedUnread || $0.joinRequestType?.isInvite == true
+                }.count
+                chatsTabDetails.badgeCount = unreadCount
+                chatsTabDetails.isBadgeCritical = unreadCount > 0
+            }
+            .store(in: &cancellables)
+        
+        userSession.clientProxy.actionsPublisher
+            .filter(\.isSyncUpdate)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                guard let self else { return }
+                Task { await self.updateContactsBadge() }
+            }
+            .store(in: &cancellables)
+        
+        // The selected tab is tinted with the effective brand accent.
+        flowParameters.appSettings.brandThemeChoicePublisher
+            .prepend(flowParameters.appSettings.brandThemeChoice)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                guard let self else { return }
+                let layout = BrandLayout.layout(for: flowParameters.appSettings.effectiveBrandTheme)
+                let accent = layout.tabAccentColor
+                chatsTabDetails.brandAccentColour = accent
+                contactsTabDetails.brandAccentColour = accent
+                spacesTabDetails.brandAccentColour = accent
+                profileTabDetails.brandAccentColour = accent
+                searchTabDetails?.brandAccentColour = accent
+            }
+            .store(in: &cancellables)
+    }
+    
+    private func updateContactsBadge() async {
+        guard let friendsService else { return }
+        if case .success(let requests) = await friendsService.requests() {
+            let pendingCount = requests.incoming.count
+            contactsTabDetails.badgeCount = pendingCount
+            contactsTabDetails.isBadgeCritical = pendingCount > 0
+        }
     }
     
     // MARK: - Onboarding

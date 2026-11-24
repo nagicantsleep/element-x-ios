@@ -9,6 +9,11 @@
 import Foundation
 import MatrixRustSDK
 
+/// Wire marker msgtype for friend requests, mirroring `FriendsService.friendRequestMsgType`. A
+/// file-local constant because this file is also compiled into the NSE target, which doesn't
+/// include the friends feature (ADR 0016).
+private nonisolated let friendRequestMsgType = "m.friend_request"
+
 nonisolated struct RoomMessageEventStringBuilder {
     enum Style {
         /// Plain: no prefix, no special text treatment
@@ -67,8 +72,12 @@ nonisolated struct RoomMessageEventStringBuilder {
             }
         case .gallery(let content):
             message = buildGalleryMessage(for: style, content: content)
-        case .other(_, let body):
-            message = AttributedString(body)
+        case .other(let msgtype, let body):
+            // ADR 0016: `m.friend_request` markers render with a localized display label; the
+            // sent body stays English for interoperability.
+            message = AttributedString(msgtype == friendRequestMsgType
+                ? localizedFriendRequestLabel()
+                : body)
         }
         
         if style == .senderPrefixed {
@@ -116,6 +125,18 @@ nonisolated struct RoomMessageEventStringBuilder {
         } else {
             return AttributedString("\(type) - \(caption)")
         }
+    }
+    
+    /// The localized friend-request label. The main app resolves the Untranslated table; the NSE
+    /// falls back to the English body. Detected by `msgtype: m.friend_request` (ADR 0016).
+    private func localizedFriendRequestLabel() -> String {
+        #if IS_MAIN_APP
+        UntranslatedL10n.friendRequestDisplayBody
+        #else
+        // The NSE doesn't compile the friends feature or the Untranslated strings table; mirror
+        // the wire body, which stays English for interoperability.
+        "👋 Friend request"
+        #endif
     }
     
     private func prefix(_ eventSummary: AttributedString, with textToBold: String) -> AttributedString {

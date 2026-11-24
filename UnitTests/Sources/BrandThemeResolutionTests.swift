@@ -6,6 +6,7 @@
 //
 
 @testable import ElementX
+import Foundation
 import Testing
 
 /// ADR 0016: the effective brand theme is resolved from the explicit picker choice first, and

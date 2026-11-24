@@ -22,20 +22,6 @@ struct HomeScreenRecoveryKeyConfirmationBanner: View {
         }
     }
     
-    var message: String {
-        switch state {
-        case .setUpRecovery: L10n.bannerSetUpRecoveryContent
-        case .recoveryOutOfSync: L10n.confirmRecoveryKeyBannerMessage
-        }
-    }
-    
-    var actionTitle: String {
-        switch state {
-        case .setUpRecovery: L10n.bannerSetUpRecoverySubmit
-        case .recoveryOutOfSync: L10n.confirmRecoveryKeyBannerPrimaryButtonTitle
-        }
-    }
-    
     var primaryAction: HomeScreenViewAction {
         switch state {
         case .setUpRecovery: .setupRecovery
@@ -44,19 +30,15 @@ struct HomeScreenRecoveryKeyConfirmationBanner: View {
     }
     
     var body: some View {
-        VStack(spacing: 16) {
-            content
-            buttons
-        }
-        .padding(16)
-        .background(Color.compound.bgSubtleSecondary)
-        .cornerRadius(14)
-        .padding(.horizontal, 16)
-    }
-    
-    var content: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack(alignment: .center, spacing: 16) {
+        // ADR 0016: compact one-row banner (icon, title, dismiss); tapping the row performs the
+        // existing primary action. Security behaviour unchanged.
+        Button {
+            context.send(viewAction: primaryAction)
+        } label: {
+            HStack(spacing: 12) {
+                CompoundIcon(\.keySolid, size: .small, relativeTo: .compound.bodyMD)
+                    .foregroundColor(.compound.iconSecondary)
+                
                 Text(title)
                     .font(.compound.bodyLGSemibold)
                     .foregroundColor(.compound.textPrimary)
@@ -69,36 +51,21 @@ struct HomeScreenRecoveryKeyConfirmationBanner: View {
                         CompoundIcon(\.close, size: .medium, relativeTo: .compound.bodyLGSemibold)
                             .foregroundColor(.compound.iconSecondary)
                     }
+                    .accessibilityLabel(L10n.actionSkip)
+                } else {
+                    CompoundIcon(\.chevronRight, size: .small, relativeTo: .compound.bodyMD)
+                        .foregroundColor(.compound.iconSecondary)
                 }
             }
-            
-            Text(message)
-                .font(.compound.bodyMD)
-                .foregroundColor(.compound.textSecondary)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .contentShape(Rectangle())
         }
-    }
-    
-    var buttons: some View {
-        VStack(spacing: 16) {
-            Button {
-                context.send(viewAction: primaryAction)
-            } label: {
-                Text(actionTitle)
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.compound(.primary, size: .medium))
-            .accessibilityIdentifier(A11yIdentifiers.homeScreen.recoveryKeyConfirmationBannerContinue)
-            
-            if state == .recoveryOutOfSync {
-                Button {
-                    context.send(viewAction: .resetEncryption)
-                } label: {
-                    Text(L10n.confirmRecoveryKeyBannerSecondaryButtonTitle)
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.compound(.tertiary, size: .medium))
-            }
-        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier(A11yIdentifiers.homeScreen.recoveryKeyConfirmationBannerContinue)
+        .background(Color.compound.bgSubtleSecondary)
+        .cornerRadius(14)
+        .padding(.horizontal, 16)
     }
 }
 

@@ -24,6 +24,20 @@ struct HomeScreen: View {
     }
     
     var body: some View {
+        if isBrandHeader {
+            brandHeaderContent
+        } else {
+            stockContent
+        }
+    }
+    
+    /// ADR 0016: Z and L replace the stock large-title nav bar with their own header
+    /// (Z: accent bar with inline search; L: plain canvas, bold title + grey search pill).
+    private var isBrandHeader: Bool {
+        context.viewState.brandLayout.homeHeaderKind != .stock
+    }
+    
+    private var stockContent: some View {
         HomeScreenContent(context: context, scrollViewAdapter: scrollViewAdapter)
             .alert(item: $context.alertInfo)
             .alert(item: $context.leaveRoomAlertItem,
@@ -42,6 +56,35 @@ struct HomeScreen: View {
                     .navigationTransition(.zoom(sourceID: NavigationTransitionSourceID.spaceFilters,
                                                 in: navigationTransitionNamespace))
             }
+    }
+    
+    /// The Z/L room list: brand header pinned above the list, no stock navigation title.
+    private var brandHeaderContent: some View {
+        VStack(spacing: 0) {
+            BrandHomeHeaderView(context: context,
+                                kind: context.viewState.brandLayout.homeHeaderKind,
+                                settingsButton: settingsButton,
+                                onStartChat: { context.send(viewAction: .startChat) })
+            
+            HomeScreenContent(context: context, scrollViewAdapter: scrollViewAdapter)
+                .background(Color.compound.bgCanvasDefault)
+        }
+        .background(Color.compound.bgCanvasDefault.ignoresSafeArea())
+        .navigationTitle("")
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarHidden(true)
+        .toolbar(.hidden, for: .navigationBar)
+        .alert(item: $context.alertInfo)
+        .alert(item: $context.leaveRoomAlertItem,
+               actions: leaveRoomAlertActions,
+               message: leaveRoomAlertMessage)
+        .track(screen: .Home)
+        .sentryTrace("\(Self.self)")
+        .sheet(item: $context.spaceFiltersViewModel) { vm in
+            ChatsSpaceFiltersScreen(context: vm.context)
+                .navigationTransition(.zoom(sourceID: NavigationTransitionSourceID.spaceFilters,
+                                            in: navigationTransitionNamespace))
+        }
     }
     
     // MARK: - Private

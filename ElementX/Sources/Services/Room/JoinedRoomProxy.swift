@@ -807,6 +807,8 @@ class JoinedRoomProxy: JoinedRoomProxyProtocol {
         }
     }
     
+    /// Excludes membership/state noise; message events (including `m.friend_request` custom
+    /// msgtypes) are delivered for rendering in the timeline and room list preview.
     private static let excludedEventsFilter: TimelineEventFilter = {
         var stateEventFilters: [TimelineEventType] = [.roomCanonicalAlias,
                                                       .roomGuestAccess,

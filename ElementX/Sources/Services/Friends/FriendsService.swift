@@ -387,8 +387,10 @@ final class FriendsService: FriendsServiceProtocol {
     
     static let friendListEventType = "m.friend_list"
     static let friendRequestsEventType = "m.friend_requests"
-    static let friendRequestMsgType = "m.friend_request"
-    static let friendRequestBody = "👋 Friend request"
+    /// `nonisolated` so timeline rendering (nonisolated contexts) can compare msgtypes without
+    /// hopping to the main actor.
+    nonisolated static let friendRequestMsgType = "m.friend_request"
+    nonisolated static let friendRequestBody = "👋 Friend request"
     
     private static let listPath = "/_synapse/client/friends"
     private static let requestsPath = "/_synapse/client/friends/requests"

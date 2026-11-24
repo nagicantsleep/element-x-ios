@@ -955,6 +955,7 @@
 		920DC020F18ABC88175114D3 /* SpaceListScreenViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5557DDA438841AF5DC003D0B /* SpaceListScreenViewModelTests.swift */; };
 		9219640F4D980CFC5FE855AD /* target.yml in Resources */ = {isa = PBXBuildFile; fileRef = 536E72DCBEEC4A1FE66CFDCE /* target.yml */; };
 		9223E5F2A2CE0AFFDFF0AFFB /* LiveLocationSharingBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C60559596897AC65D2CB799 /* LiveLocationSharingBannerView.swift */; };
+		926ACFFF440AB01984E8D0D3 /* BrandHomeHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEFE9709CC2A134FEC2597E /* BrandHomeHeaderView.swift */; };
 		92720AB0DA9AB5EEF1DAF56B /* SecureBackupLogoutConfirmationScreenViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DC017C3CB6B0F7C63F460F2 /* SecureBackupLogoutConfirmationScreenViewModel.swift */; };
 		9278EC51D24E57445B290521 /* AudioSessionProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB284643AF7AB131E307DCE0 /* AudioSessionProtocol.swift */; };
 		92919B6522B26B2681232EAC /* LiveLocationManagerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B5DF0E888F66652F8C4CEC5 /* LiveLocationManagerMock.swift */; };
@@ -2864,6 +2865,7 @@
 		AF848B41DAF1066F3054D4A1 /* SessionVerificationScreenModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionVerificationScreenModels.swift; sourceTree = "<group>"; };
 		AF8548D48512127CCC17C520 /* PollRoomTimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PollRoomTimelineView.swift; sourceTree = "<group>"; };
 		AFEF489B8E2450E2BA1A314E /* uk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = uk; path = uk.lproj/SAS.strings; sourceTree = "<group>"; };
+		AFEFE9709CC2A134FEC2597E /* BrandHomeHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrandHomeHeaderView.swift; sourceTree = "<group>"; };
 		B050A6B233D95807A09289E7 /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = wrapper.cfbundle; path = Settings.bundle; sourceTree = "<group>"; };
 		B0618820D26F9871A4BBB40E /* ComposerToolbarViewModelProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComposerToolbarViewModelProtocol.swift; sourceTree = "<group>"; };
 		B08CBE1E670690ECF11C2C6A /* eu */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = eu; path = eu.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
@@ -4857,6 +4859,7 @@
 			isa = PBXGroup;
 			children = (
 				8D152423EE6CF0ECCC84091A /* BloomModifier.swift */,
+				AFEFE9709CC2A134FEC2597E /* BrandHomeHeaderView.swift */,
 				B902EA6CD3296B0E10EE432B /* HomeScreen.swift */,
 				A3B4B58B79A6FA250B24A1EC /* HomeScreenContent.swift */,
 				C0FEA560929DD73FFEF8C3DF /* HomeScreenEmptyStateView.swift */,
@@ -8872,6 +8875,7 @@
 				E794AB6ABE1FF5AF0573FEA1 /* BlurHashEncode.swift in Sources */,
 				1C6B2A1A5A9699DD4C9755B3 /* BootDetectionManager.swift in Sources */,
 				B20513E7A5C98382F698E5BC /* BrandCompoundHook.swift in Sources */,
+				926ACFFF440AB01984E8D0D3 /* BrandHomeHeaderView.swift in Sources */,
 				DC0C4705EB77B2CFEAC16B83 /* BrandLayout.swift in Sources */,
 				493663ECF2ADD213E10613B2 /* BrandTheme.swift in Sources */,
 				A8FA7671948E3DF27F320026 /* BugReportFlowCoordinator.swift in Sources */,

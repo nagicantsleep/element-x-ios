@@ -117,6 +117,7 @@ enum A11yIdentifiers {
         let recoveryKeyConfirmationBannerContinue = "home_screen-recovery_key_confirmation_continue"
         let startChat = "home_screen-start_chat"
         let spaceFilters = "home_screen-space_filters"
+        let searchField = "home_screen-search_field"
         
         let roomNamePrefix = "home_screen-room_name"
         func roomName(_ name: String) -> String {

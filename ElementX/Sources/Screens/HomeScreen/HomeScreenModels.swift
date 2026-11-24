@@ -92,6 +92,14 @@ enum HomeScreenSecurityBannerMode: Equatable {
 struct HomeScreenViewState: BindableState {
     var userProfile: UserProfile
     
+    /// The effective brand theme (ADR 0016): drives the themed room list header and tab badges.
+    var brandTheme: BrandTheme = .defaultTheme
+    
+    /// The per-theme presentation knobs derived from ``brandTheme``.
+    var brandLayout: BrandLayout {
+        BrandLayout.layout(for: brandTheme)
+    }
+    
     var securityBannerMode = HomeScreenSecurityBannerMode.none
     var shouldShowNewSoundBanner = false
     

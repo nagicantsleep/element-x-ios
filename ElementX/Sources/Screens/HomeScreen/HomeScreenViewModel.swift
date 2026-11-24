@@ -61,6 +61,12 @@ class HomeScreenViewModel: HomeScreenViewModelType, HomeScreenViewModelProtocol 
             .weakAssign(to: \.state.userProfile, on: self)
             .store(in: &cancellables)
         
+        // ADR 0016: the room list header is themed (Z accent bar / L plain) from the layout knobs.
+        appSettings.brandThemeChoicePublisher
+            .map { [appSettings] _ in appSettings.effectiveBrandTheme }
+            .weakAssign(to: \.state.brandTheme, on: self)
+            .store(in: &cancellables)
+        
         userSession.sessionSecurityStatePublisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] securityState in

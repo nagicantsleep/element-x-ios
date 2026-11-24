@@ -6,6 +6,7 @@
 //
 
 @testable import ElementX
+import Foundation
 import Testing
 
 struct AppSettingsTests {

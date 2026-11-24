@@ -8,9 +8,39 @@
 @testable import ElementX
 import SwiftUI
 import Testing
+import UIKit
 
 /// ADR 0016 per-theme layout knobs for the Default/Z/L themes.
 final class BrandLayoutTests {
+    /// SwiftUI `Color`/`UIColor` equality doesn't hold for predicate-based dynamic colours (each
+    /// instance wraps its own provider closure), so knobs are compared through their resolved
+    /// RGBA in light and dark traits instead.
+    private func expectResolvedEqual(_ color: Color?, _ light: String, _ dark: String,
+                                     sourceLocation: SourceLocation = #_sourceLocation) {
+        guard let color else {
+            Issue.record("Expected a colour", sourceLocation: sourceLocation)
+            return
+        }
+        
+        expectResolvedEqual(UIColor(color), BrandTheme.uiColor(light), sourceLocation: sourceLocation)
+        expectResolvedEqual(UIColor(color), BrandTheme.uiColor(dark), sourceLocation: sourceLocation)
+    }
+    
+    private func expectResolvedEqual(_ color: UIColor?, _ expected: UIColor,
+                                     sourceLocation: SourceLocation = #_sourceLocation) {
+        for style in [UIUserInterfaceStyle.light, .dark] {
+            let traits = UITraitCollection(userInterfaceStyle: style)
+            guard let color,
+                  let rgba = color.resolvedColor(with: traits).rgbaComponents(),
+                  let expectedRgba = expected.resolvedColor(with: traits).rgbaComponents() else {
+                Issue.record("Couldn't resolve colour for \(style == .light ? "light" : "dark")", sourceLocation: sourceLocation)
+                return
+            }
+            
+            #expect(rgba == expectedRgba, sourceLocation: sourceLocation)
+        }
+    }
+    
     @Test
     func defaultLayoutIsStock() {
         let layout = BrandLayout.layout(for: .defaultTheme)
@@ -32,15 +62,15 @@ final class BrandLayoutTests {
     func zLayoutKnobs() {
         let layout = BrandLayout.layout(for: .z)
         
-        #expect(layout.chatBackgroundColor == BrandTheme.color("#E2E9F1", "#0E1621"))
-        #expect(layout.outgoingBubbleColor == BrandTheme.color("#E5EFFF", "#14263D"))
-        #expect(layout.outgoingTextColor == BrandTheme.color("#081C36", "#E9EDF2"))
-        #expect(layout.incomingBubbleColor == BrandTheme.color("#FFFFFF", "#1F2A36"))
+        expectResolvedEqual(layout.chatBackgroundColor, "#E2E9F1", "#0E1621")
+        expectResolvedEqual(layout.outgoingBubbleColor, "#E5EFFF", "#14263D")
+        expectResolvedEqual(layout.outgoingTextColor, "#081C36", "#E9EDF2")
+        expectResolvedEqual(layout.incomingBubbleColor, "#FFFFFF", "#1F2A36")
         #expect(layout.bubbleCornerRadius == 12)
         #expect(layout.homeHeaderKind == .zBar)
         #expect(layout.isChatBarAccented == true)
         #expect(layout.readIndicatorStyle == .stockAvatars)
-        #expect(layout.tabAccentColor == BrandTheme.uiColor("#0068FF", "#4D94FF"))
+        expectResolvedEqual(layout.tabAccentColor.map(Color.init(uiColor:)), "#0068FF", "#4D94FF")
         #expect(layout.showsTabCountBadges == true)
     }
     
@@ -49,15 +79,15 @@ final class BrandLayoutTests {
     func lLayoutKnobs() {
         let layout = BrandLayout.layout(for: .l)
         
-        #expect(layout.chatBackgroundColor == BrandTheme.color("#8CABD8", "#0E1621"))
-        #expect(layout.outgoingBubbleColor == BrandTheme.color("#85E249", "#2F6F3E"))
-        #expect(layout.outgoingTextColor == BrandTheme.color("#1A1A1A", "#E9EDF2"))
-        #expect(layout.incomingBubbleColor == BrandTheme.color("#FFFFFF", "#222821"))
+        expectResolvedEqual(layout.chatBackgroundColor, "#8CABD8", "#0E1621")
+        expectResolvedEqual(layout.outgoingBubbleColor, "#85E249", "#2F6F3E")
+        expectResolvedEqual(layout.outgoingTextColor, "#1A1A1A", "#E9EDF2")
+        expectResolvedEqual(layout.incomingBubbleColor, "#FFFFFF", "#222821")
         #expect(layout.bubbleCornerRadius == 18)
         #expect(layout.homeHeaderKind == .lPlain)
         #expect(layout.isChatBarAccented == false)
         #expect(layout.readIndicatorStyle == .textLabel)
-        #expect(layout.tabAccentColor == BrandTheme.uiColor("#06C755", "#33D377"))
+        expectResolvedEqual(layout.tabAccentColor.map(Color.init(uiColor:)), "#06C755", "#33D377")
         #expect(layout.showsTabCountBadges == true)
     }
     
@@ -67,5 +97,31 @@ final class BrandLayoutTests {
         #expect(BrandLayout.layout(for: .z) == BrandLayout.z)
         #expect(BrandLayout.layout(for: .l) == BrandLayout.l)
         #expect(BrandLayout.layout(for: .defaultTheme) == BrandLayout.default)
+    }
+}
+
+private extension UIColor {
+    /// RGBA in extension sRGB space, quantised for stable equality across colour spaces.
+    func rgbaComponents() -> (red: Int, green: Int, blue: Int, alpha: Int)? {
+        var red: CGFloat = 0
+        var green: CGFloat = 0
+        var blue: CGFloat = 0
+        var alpha: CGFloat = 0
+        
+        let srgb = UIColor { traits in
+            let base = self.resolvedColor(with: traits)
+            var (r, g, b, a) = (CGFloat(0), CGFloat(0), CGFloat(0), CGFloat(0))
+            base.getRed(&r, green: &g, blue: &b, alpha: &a)
+            return UIColor(red: r, green: g, blue: b, alpha: a)
+        }
+        
+        guard srgb.resolvedColor(with: UITraitCollection(userInterfaceStyle: .light)).getRed(&red,
+                                                                                             green: &green,
+                                                                                             blue: &blue,
+                                                                                             alpha: &alpha) else {
+            return nil
+        }
+        
+        return (Int((red * 255).rounded()), Int((green * 255).rounded()), Int((blue * 255).rounded()), Int((alpha * 255).rounded()))
     }
 }

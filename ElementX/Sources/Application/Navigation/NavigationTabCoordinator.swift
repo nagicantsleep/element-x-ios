@@ -27,6 +27,13 @@ import SwiftUI
         /// into the trailing search button in the tab bar.
         let isSearch: Bool
         var badgeCount = 0
+        /// ADR 0016: badges on Messages/Contacts are critical red (matching Android's
+        /// HomeNavigationBar) rather than accent coloured.
+        var isBadgeCritical = false
+        
+        /// The accent colour the selected tab is tinted with, derived from the effective brand
+        /// theme. Kept in sync by `UserSessionFlowCoordinator`; `nil` keeps the stock tint.
+        var brandAccentColour: UIColor?
         
         /// Provide the tab's split coordinator in here to have the tab bar automatically hidden
         /// when pushing a child into the split view's details on iPhone/compact iPad.
@@ -473,10 +480,17 @@ private struct NavigationTabCoordinatorView<Tag: Hashable>: View {
     
     private func configureAppearance(_ tabBarController: UITabBarController) {
         standardAppearance.configureWithDefaultBackground()
-        standardAppearance.stackedLayoutAppearance.normal.badgeBackgroundColor = .compound.iconAccentPrimary // iPhone Portrait
-        standardAppearance.compactInlineLayoutAppearance.normal.badgeBackgroundColor = .compound.iconAccentPrimary // iPhone Landscape
-        standardAppearance.inlineLayoutAppearance.normal.badgeBackgroundColor = .compound.iconAccentPrimary // iPadOS 17 (doesn't work for 18+)
+        // ADR 0016: Messages/Contacts badges are critical red, matching Android's
+        // HomeNavigationBar (the selected tab's icon is already accent tinted, so an accent
+        // badge would be invisible against it).
+        standardAppearance.stackedLayoutAppearance.normal.badgeBackgroundColor = .compound.bgCriticalPrimary // iPhone Portrait
+        standardAppearance.compactInlineLayoutAppearance.normal.badgeBackgroundColor = .compound.bgCriticalPrimary // iPhone Landscape
+        standardAppearance.inlineLayoutAppearance.normal.badgeBackgroundColor = .compound.bgCriticalPrimary // iPadOS 17 (doesn't work for 18+)
         tabBarController.tabBar.standardAppearance = standardAppearance
+        
+        // ADR 0016: the selected tab is tinted with the brand accent; the stock accent when the
+        // layout provides none (Default theme). Kept in sync by `UserSessionFlowCoordinator`.
+        tabBarController.tabBar.tintColor = navigationTabCoordinator.tabModules.first?.details.brandAccentColour ?? .compound.iconAccentPrimary
     }
 }
 
